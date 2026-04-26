@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "spread": {
+      "type": "number",
+      "description": "Maximum allowed spread percentage"
+    },
+    "range": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      },
+      "required": ["min", "max"]
+    },
+    "round": {
+      "type": "integer",
+      "enum": [1, 2]
+    },
+    "direction": {
+      "type": "string",
+      "enum": ["above", "below", "overlap", "none"]
+    },
+    "feasible": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": ["match", "no_match"]
+    },
+    "outcome_value": {
+      "type": "number"
+    }
+  },
+  "required": ["spread", "range", "round"]
+}
