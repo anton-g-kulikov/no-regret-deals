@@ -9,9 +9,9 @@ export default function ProtocolPage() {
         <header className="spec-header">
           <Link href="/" className="back-link">← Return to Application</Link>
           <div className="status-chip">Draft Specification v1.2</div>
-          <h1>Bounded Alignment Protocol (BAP)</h1>
+          <h1>Private (Bounded) Alignment Protocol (PBAP)</h1>
           <p className="abstract">
-            A multi-stage negotiation protocol for identifying value alignment between two parties 
+            A multi-stage negotiation protocol for identifying value alignment between two parties
             without premature disclosure of private thresholds.
           </p>
         </header>
@@ -19,65 +19,63 @@ export default function ProtocolPage() {
         <section className="spec-section">
           <h2>1. Definitions</h2>
           <div className="definition-box">
-            <p><strong>Parties:</strong> <em>Initiator (A)</em> and <em>Responder (B)</em>.</p>
-            <p><strong>Threshold Range (R):</strong> A closed interval $[min, max]$ representing a party&apos;s &quot;No Regret&quot; zone.</p>
-            <p><strong>Flexibility Spread (&sigma;):</strong> A scalar percentage value (e.g., 0.2) defining the maximum allowed expansion of R.</p>
-            <p><strong>Midpoint ($M$):</strong> The arithmetic mean of a range, (min + max) / 2.</p>
+            <p><strong>Parties:</strong> Initiator (A) and Responder (B).</p>
+            <p><strong>Threshold Range:</strong> A range [min, max] representing a party's "No Regret" zone.</p>
+            <p><strong>Flexibility Spread (σ):</strong> A percentage (e.g., 20%) defining the maximum allowed expansion of the range.</p>
+            <p><strong>Target Value (T):</strong> The ideal value at the center of the range.</p>
           </div>
         </section>
 
         <section className="spec-section">
           <h2>2. Protocol Lifecycle</h2>
-          
+
           <div className="phase">
             <h3>Phase I: Initialization & Commitment</h3>
             <p>
-              Initiator $A$ defines a target value $M_A$ and selects $\sigma$. 
-              The system generates $R_A = [M_A(1-\sigma), M_A(1+\sigma)]$. 
-              $A$ commits $R_A$ and $\sigma$ to the protocol state.
+              Initiator A defines a target value T<sub>A</sub> and selects a flexibility spread (σ).</p>
+            <p>
+              The system generates an initial range: [T<sub>A</sub> - σ, T<sub>A</sub> + σ].</p>
+            <p>
+              This range is committed to the protocol.
             </p>
           </div>
 
           <div className="phase">
             <h3>Phase II: Secure Response</h3>
             <p>
-              Responder $B$ provides $M_B$. The system generates $R_B = [M_B(1-\sigma), M_B(1+\sigma)]$. 
-              The protocol ensures fairness by applying the same $\sigma$ selected by the Initiator.
+              Responder B provides their target value T<sub>B</sub>. </p> <p> The system generates their range using the same flexibility σ selected by the Initiator to ensure fairness.
             </p>
           </div>
 
           <div className="phase">
             <h3>Phase III: Overlap Verification (Round 1)</h3>
-            <p>The protocol evaluates the intersection $I = R_A \cap R_B$.</p>
+            <p>The protocol checks if the two ranges overlap.</p>
             <div className="math-block">
-              I_min = max(min_A, min_B) <br />
-              I_max = min(max_A, max_B)
+              Overlap Min = Maximum of both Minimums <br />
+              Overlap Max = Minimum of both Maximums
             </div>
             <p>
-              If I_min &le; I_max, the state transitions to <strong>COMPLETED</strong>. 
-              The final agreement value V is defined as the midpoint of I:
+              If an overlap exists, the deal is <strong>COMPLETED</strong>.
+              The final agreement value is the center point of the overlapping section.
             </p>
-            <div className="math-block">
-              V = (I_min + I_max) / 2
-            </div>
           </div>
 
           <div className="phase">
             <h3>Phase IV: Feasibility & Directional Disclosure</h3>
             <p>
-              If $R_A \cap R_B = \emptyset$, the protocol checks for <strong>Bounded Feasibility</strong>. 
-              Alignment is feasible if a second-round overlap is possible given the maximum flexibility spread.
+              If the ranges do not overlap, the protocol checks for <strong>Bounded Feasibility</strong>.
+              This determines if a deal is possible if both parties were to use their maximum flexibility.
             </p>
             <div className="logic-box">
-              <h4>Case: B is below A (max_B &lt; min_A)</h4>
-              <p>Feasible if: max_B(1+&sigma;) &ge; min_A / (1+&sigma;)</p>
-              
-              <h4>Case: B is above A (min_B &gt; max_A)</h4>
-              <p>Feasible if: min_B / (1+&sigma;) &le; max_A(1+&sigma;)</p>
+              <h4>Case: B is below A</h4>
+              <p>Feasible if B's maximum possible range reaches A's minimum possible range.</p>
+
+              <h4>Case: B is above A</h4>
+              <p>Feasible if B's minimum possible range reaches A's maximum possible range.</p>
             </div>
             <p>
-              If feasible, the protocol reveals the <strong>Directional Hint</strong> (e.g., &quot;Party B is Above&quot;) to both parties. 
-              If not feasible, the protocol enters <strong>DEADLOCK</strong> and terminates without revealing any data.
+              If feasible, the protocol reveals a <strong>Directional Hint</strong> (e.g., "Party B is Above") to both parties.
+              If not feasible, the protocol enters <strong>DEADLOCK</strong> and terminates without revealing any directional data.
             </p>
           </div>
         </section>
@@ -95,14 +93,14 @@ export default function ProtocolPage() {
             <div className="security-item">
               <h4>Anti-Fishing Constraint</h4>
               <p>
-                By locking the flexibility spread ($\sigma$) globally for the deal, a Responder cannot use a disproportionately 
-                large range to &quot;fish&quot; for the Initiator&apos;s budget.
+                By locking the flexibility spread (σ) globally for the deal, a Responder cannot use a disproportionately
+                large range to "fish" for the Initiator's budget.
               </p>
             </div>
             <div className="security-item">
               <h4>Mathematical Neutrality</h4>
               <p>
-                The use of overlap midpoints removes the first-mover disadvantage. 
+                The use of overlap midpoints removes the first-mover disadvantage.
                 Neither party can &quot;win&quot; the negotiation through aggressive anchoring; the protocol extracts the shared surplus equally.
               </p>
             </div>
@@ -120,14 +118,14 @@ export default function ProtocolPage() {
         </section>
 
         <footer className="spec-footer">
-          <p>This protocol is open for review. For inquiries regarding the mathematical implementation, contact the architect.</p>
-          <div className="author-tag">Architect: AK</div>
+          <p>This protocol is open for review.</p>
+          <p>For inquiries regarding the mathematical implementation, drop me a line or submit an issue on <a href="https://github.com/anton-g-kulikov/no-regret-deals" target="_blank" rel="noopener noreferrer" className="protocol-link">GitHub</a>.</p>
         </footer>
       </div>
 
       <style jsx>{`
         .protocol-spec {
-          padding: 6rem 0;
+          padding: 3rem 0;
           max-width: 800px;
           color: #d1d1d6;
           line-height: 1.6;
