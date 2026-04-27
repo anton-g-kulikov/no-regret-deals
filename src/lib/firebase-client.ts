@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, connectAuthEmulator, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -31,4 +31,5 @@ if (typeof window !== 'undefined') {
   }
 }
 
+export const signOut = () => firebaseSignOut(auth);
 export { app, auth, db, googleProvider, signInWithPopup };

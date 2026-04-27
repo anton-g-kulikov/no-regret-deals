@@ -194,3 +194,34 @@ async function checkRound2Completion(dealRef: any, deal: Deal, currentParty: Par
   
   await dealRef.update(update);
 }
+
+/**
+ * Gets aggregated statistics for deals.
+ */
+export async function getDealStats(): Promise<{ fairDeals: number; unfairDealsPrevented: number }> {
+  try {
+    const matchesCountSnapshot = await db.collection('deals').where('result.outcome', '==', 'MATCH').count().get();
+    const noMatchesCountSnapshot = await db.collection('deals').where('result.outcome', '==', 'NO_MATCH').count().get();
+    const rejectedCountSnapshot = await db.collection('deals').where('status', '==', 'REJECTED').count().get();
+
+    const matches = matchesCountSnapshot.data().count;
+    const noMatches = noMatchesCountSnapshot.data().count;
+    const rejected = rejectedCountSnapshot.data().count;
+
+    // We can also count deals that were abandoned before completion, but for now we focus on explicit outcomes.
+    // Assuming starting a deal that doesn't overlap prevents an unfair outcome.
+    
+    const fairDeals = matches;
+    const unfairDealsPrevented = noMatches + rejected;
+
+    return {
+      fairDeals,
+      unfairDealsPrevented,
+    };
+  } catch (error) {
+    console.error('Error fetching deal stats from Firestore:', error);
+    // Return 0 if there's an error
+    return { fairDeals: 0, unfairDealsPrevented: 0 };
+  }
+}
+

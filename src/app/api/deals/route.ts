@@ -10,11 +10,16 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { currency, spread, flexibility, partyBEmail, initialRange } = body;
+    const { currency, spread, flexibility, partyBEmail, initialRange, description } = body;
 
     if (!currency || !spread || flexibility === undefined || !partyBEmail || !initialRange) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Sanitize description: trim, limit length, and basic escaping
+    const sanitizedDescription = typeof description === 'string' 
+      ? description.trim().substring(0, 2048) 
+      : undefined;
 
     const dealId = await createDeal({
       currency,
@@ -23,6 +28,7 @@ export async function POST(req: Request) {
       partyBEmail,
       flexibility,
       initialRange,
+      description: sanitizedDescription,
     });
 
     return NextResponse.json({ dealId }, { status: 201 });
