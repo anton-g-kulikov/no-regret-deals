@@ -42,7 +42,8 @@ export function calculateSafeReach(anchor: number, spread: number, direction: 'm
  * Returns true if a is less than or equal to b (within tolerance).
  */
 export function leq(a: number, b: number): boolean {
-  return a <= b + EPSILON;
+  // Add a tiny buffer (0.01%) to account for rounding differences in large numbers
+  return a <= (b * 1.0001) + EPSILON;
 }
 
 /**
@@ -50,5 +51,6 @@ export function leq(a: number, b: number): boolean {
  * Returns true if a is greater than or equal to b (within tolerance).
  */
 export function geq(a: number, b: number): boolean {
-  return a >= b - EPSILON;
+  // Add a tiny buffer (0.01%) to account for rounding differences in large numbers
+  return a >= (b * 0.9999) - EPSILON;
 }
