@@ -11,8 +11,10 @@ import { formatCurrency, formatPercent, calculateSafeReach } from '@/lib/protoco
 export default function DealPage() {
   const { id } = useParams();
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [deal, setDeal] = useState<Deal | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [dealLoading, setDealLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
   
   // Local Form State (Responder/Round 2)
   const [midpoint, setMidpoint] = useState('');
@@ -35,13 +37,38 @@ export default function DealPage() {
   }, [midpoint, deal]);
 
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (u) => setUser(u));
-    const unsubDeal = onSnapshot(doc(db, 'deals', id as string), (doc) => {
-      if (doc.exists()) setDeal({ id: doc.id, ...doc.data() } as Deal);
-      setLoading(false);
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setAuthLoading(false);
     });
-    return () => { unsubAuth(); unsubDeal(); };
-  }, [id]);
+    return () => unsubAuth();
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setDealLoading(false);
+      return;
+    }
+
+    const unsubDeal = onSnapshot(doc(db, 'deals', id as string), 
+      (doc) => {
+        if (doc.exists()) {
+          setDeal({ id: doc.id, ...doc.data() } as Deal);
+          setErrorMsg('');
+        } else {
+          setErrorMsg('Deal not found.');
+        }
+        setDealLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching deal:", error);
+        setErrorMsg('Access denied');
+        setDealLoading(false);
+      }
+    );
+    return () => unsubDeal();
+  }, [id, user, authLoading]);
 
   useEffect(() => {
     if (user && deal && (deal.status === 'DECIDING_ON_R2' || deal.status === 'WAITING_FOR_R2_BIDS')) {
@@ -53,9 +80,11 @@ export default function DealPage() {
     }
   }, [user, deal, id]);
 
-  if (loading) return <div className="container">Loading Protocol...</div>;
-  if (!deal) return <div className="container">Deal not found.</div>;
+  if (authLoading || dealLoading) return <div className="container">Loading Protocol...</div>;
   if (!user) return <AuthView handleLogin={() => signInWithPopup(auth, googleProvider)} />;
+  if (errorMsg === 'Access denied') return <AccessDeniedView email={user.email!} />;
+  if (errorMsg) return <div className="container">{errorMsg}</div>;
+  if (!deal) return <div className="container">Deal not found.</div>;
   
   const isPartyA = user.email === deal.partyAEmail;
   const isPartyB = user.email === deal.partyBEmail;
@@ -76,7 +105,10 @@ export default function DealPage() {
       });
       if (!res.ok) throw new Error((await res.json()).error);
       setMidpoint('');
-    } catch (error: any) { alert(error.message); }
+    } catch (error: unknown) {
+      if (error instanceof Error) alert(error.message);
+      else alert('An unexpected error occurred');
+    }
     finally { setSubmitting(false); }
   };
 
@@ -91,7 +123,10 @@ export default function DealPage() {
         body: JSON.stringify({ party, accept: false }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
-    } catch (error: any) { alert(error.message); }
+    } catch (error: unknown) {
+      if (error instanceof Error) alert(error.message);
+      else alert('An unexpected error occurred');
+    }
     finally { setSubmitting(false); }
   };
 
@@ -139,68 +174,51 @@ function MarketSpreadVisualizer({ range, targets, currency, hint }: { range: { m
   const midpoint = Math.round((range.min + range.max) / 2);
 
   return (
-    <div style={{ margin: '2rem 0', position: 'relative' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', padding: '0 4px', fontWeight: 500 }}>
-        <span>Min Threshold: {formatCurrency(targets.min, currency)}</span>
-        <span>Max Threshold: {formatCurrency(targets.max, currency)}</span>
-      </div>
-      
-      <div style={{ height: '48px', background: 'var(--surface-hover)', borderRadius: '12px', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-        <div style={{ 
-          position: 'absolute', 
-          left: `${leftPadding}%`, 
-          width: `${width}%`, 
-          height: '100%', 
-          background: 'rgba(99, 102, 241, 0.15)',
-          zIndex: 1,
-          borderLeft: '2px solid rgba(99, 102, 241, 0.6)',
-          borderRight: '2px solid rgba(99, 102, 241, 0.6)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--accent-hover)',
-          fontSize: '0.9rem',
-          fontWeight: 'bold',
-          letterSpacing: '0.05em'
-        }}>
-          SECURE RANGE
+    <div className="visualizer-container">
+      <div className="visualizer-track">
+        <div className="visualizer-secure-range" style={{ left: `${leftPadding}%`, width: `${width}%` }}>
+          <div className="range-label min">{formatCurrency(targets.min, currency)}</div>
+          <div className="range-label max">{formatCurrency(targets.max, currency)}</div>
         </div>
-
-        <div style={{ 
-          position: 'absolute', 
-          left: `${leftPadding + (width/2)}%`, 
-          width: '4px', 
-          height: '100%', 
-          background: 'var(--text-primary)',
-          zIndex: 2,
-          boxShadow: '0 0 10px rgba(255,255,255,0.5)',
-          transform: 'translateX(-50%)'
-        }} />
+        <div className="visualizer-midpoint-line" style={{ left: `${leftPadding + (width/2)}%` }} />
       </div>
 
-      <div style={{ position: 'relative', height: '40px', marginTop: '0.5rem' }}>
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          position: 'absolute', 
-          left: `${leftPadding + (width/2)}%`, 
-          transform: 'translateX(-50%)',
-          color: 'var(--text-primary)',
-          fontWeight: 'bold',
-          zIndex: 3,
-          fontSize: '0.9rem'
-        }}>
-          <div style={{ height: '8px', width: '2px', background: 'var(--text-primary)', marginBottom: '4px' }} />
-          <span>TARGET: {formatCurrency(midpoint, currency)}</span>
+      <div className="visualizer-target-container">
+        <div className="visualizer-target-label" style={{ left: `${leftPadding + (width/2)}%` }}>
+          <div className="visualizer-target-tick" />
+          <div className="target-pill">
+            <span className="target-label">Target</span>
+            <span className="target-value">{formatCurrency(midpoint, currency)}</span>
+          </div>
         </div>
       </div>
 
       {hint && (
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--accent-color)', fontWeight: 'bold', fontSize: '1.1rem', background: 'rgba(99,102,241,0.1)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(99,102,241,0.2)' }}>
+        <div className="visualizer-hint">
           {hint === 'ABOVE' ? '↑ THE OTHER PARTY IS HIGHER' : '↓ THE OTHER PARTY IS LOWER'}
         </div>
       )}
+
+      <style jsx>{`
+        .visualizer-container { margin: 2.5rem 0; position: relative; }
+        .visualizer-track { height: 56px; background: rgba(255,255,255,0.03); border-radius: 16px; position: relative; border: 1px solid var(--border-color); }
+        .visualizer-secure-range { position: absolute; height: 100%; background: linear-gradient(to bottom, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.1)); z-index: 1; border-left: 2px solid var(--accent-color); border-right: 2px solid var(--accent-color); }
+        .range-label { position: absolute; top: -24px; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+        .range-label.min { left: 0; transform: translateX(-50%); }
+        .range-label.max { right: 0; transform: translateX(50%); }
+        
+        .visualizer-midpoint-line { position: absolute; width: 2px; height: 100%; background: white; z-index: 2; box-shadow: 0 0 15px rgba(255,255,255,0.3); transform: translateX(-50%); opacity: 0.8; }
+        
+        .visualizer-target-container { position: relative; height: 60px; margin-top: 0.5rem; }
+        .visualizer-target-label { display: flex; flex-direction: column; align-items: center; position: absolute; transform: translateX(-50%); z-index: 3; }
+        .visualizer-target-tick { height: 12px; width: 2px; background: var(--text-primary); margin-bottom: 8px; }
+        
+        .target-pill { background: var(--text-primary); color: var(--background-color); padding: 0.4rem 0.8rem; border-radius: 99px; display: flex; flex-direction: column; align-items: center; line-height: 1.1; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .target-label { font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; opacity: 0.8; }
+        .target-value { font-size: 1rem; font-weight: 900; }
+
+        .visualizer-hint { text-align: center; margin-top: 2rem; color: var(--accent-color); font-weight: 800; font-size: 1rem; background: rgba(99,102,241,0.05); padding: 1rem; border-radius: 12px; border: 1px solid rgba(99,102,241,0.2); letter-spacing: 0.02em; }
+      `}</style>
     </div>
   );
 }
@@ -309,9 +327,14 @@ function Header({ deal, userEmail }: { deal: Deal, userEmail: string }) {
 function SubjectView({ description }: { description?: string }) {
   if (!description) return null;
   return (
-    <div className="card" style={{ marginBottom: '2rem', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-      <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Negotiation Subject</h3>
-      <p style={{ fontSize: '1.15rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{description}</p>
+    <div className="card subject-card">
+      <h3 className="subject-title">Negotiation Subject</h3>
+      <p className="subject-desc">{description}</p>
+      <style jsx>{`
+        .subject-card { margin-bottom: 2rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .subject-title { font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+        .subject-desc { font-size: 1.15rem; line-height: 1.6; white-space: pre-wrap; }
+      `}</style>
     </div>
   );
 }
@@ -319,29 +342,41 @@ function SubjectView({ description }: { description?: string }) {
 function InitiatorInstructions({ deal }: { deal: Deal }) {
   const url = typeof window !== 'undefined' ? window.location.href : '';
   return (
-    <div className="card">
-      <h2 style={{ marginBottom: '1.5rem' }}>Deal Created Successfully</h2>
-      <p style={{ marginBottom: '1.5rem' }}>Your initial range and <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong> are locked in.</p>
+    <div className="card instructions-card">
+      <h2>Deal Created Successfully</h2>
+      <p>Your initial range and <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong> are locked in.</p>
       
-      <div style={{ background: 'var(--surface-hover)', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
-        <p style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Share this URL with Party B:</p>
-        <code style={{ wordBreak: 'break-all', color: 'var(--accent-color)', fontSize: '0.95rem' }}>{url}</code>
-        <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} onClick={() => {
+      <div className="share-box">
+        <p className="share-label">Share this URL with Party B:</p>
+        <code className="share-code">{url}</code>
+        <button className="btn btn-primary share-btn" onClick={() => {
           navigator.clipboard.writeText(url);
           alert('URL copied to clipboard');
         }}>Copy Invite URL</button>
       </div>
 
-      <div style={{ borderLeft: '4px solid var(--accent-color)', paddingLeft: '1rem', margin: '2rem 0' }}>
-        <h4 style={{ color: 'var(--accent-color)', fontSize: '1.05rem' }}>The Anchoring Rule</h4>
-        <p style={{ fontSize: '1rem', marginTop: '0.5rem', lineHeight: '1.5' }}>
+      <div className="rule-box">
+        <h4>The Anchoring Rule</h4>
+        <p>
           Remember: If no match is found now, your second range (if you proceed) <strong>must overlap</strong> with the range you just submitted.
         </p>
       </div>
 
-      <div style={{ marginTop: '2rem', padding: '1.5rem', border: '1px dashed var(--accent-color)', borderRadius: '0.5rem', textAlign: 'center' }}>
+      <div className="waiting-box">
         <p className="animate-pulse">Waiting for Party B to join...</p>
       </div>
+      <style jsx>{`
+        .instructions-card h2 { margin-bottom: 1.5rem; }
+        .instructions-card > p { margin-bottom: 1.5rem; }
+        .share-box { background: var(--surface-hover); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem; border: 1px solid rgba(99, 102, 241, 0.3); }
+        .share-label { font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary); }
+        .share-code { word-break: break-all; color: var(--accent-color); font-size: 0.95rem; }
+        .share-btn { width: 100%; margin-top: 1rem; }
+        .rule-box { border-left: 4px solid var(--accent-color); padding-left: 1rem; margin: 2rem 0; }
+        .rule-box h4 { color: var(--accent-color); font-size: 1.05rem; }
+        .rule-box p { font-size: 1rem; margin-top: 0.5rem; line-height: 1.5; }
+        .waiting-box { margin-top: 2rem; padding: 1.5rem; border: 1px dashed var(--accent-color); border-radius: 0.5rem; text-align: center; }
+      `}</style>
     </div>
   );
 }
@@ -395,7 +430,9 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
   );
 }
 
-function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpoint, submitting, r1Range, anchor, targets }: any) {
+function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpoint, submitting, r1Range, anchor, targets }: {
+  deal: Deal, party: Party, onSubmit: React.FormEventHandler, onReject: () => void, midpoint: string, setMidpoint: (val: string) => void, submitting: boolean, r1Range: Range | null, anchor: Range, targets: Range
+}) {
   const hasSubmitted = party === 'A' ? deal.round2SubmittedA : deal.round2SubmittedB;
   const isB = party === 'B';
   const bIsAbove = deal.result?.direction === 'above';
@@ -403,19 +440,24 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
 
   if (hasSubmitted) {
     return (
-      <div className="card" style={{ textAlign: 'center' }}>
-        <h2 style={{ marginBottom: '1.5rem' }}>Bid Submitted</h2>
-        <div style={{ padding: '2rem', border: '1px dashed var(--accent-color)', borderRadius: '1rem' }}>
+      <div className="card submitted-card">
+        <h2>Bid Submitted</h2>
+        <div className="waiting-pulse">
           <p className="animate-pulse">Waiting for your counterpart to decide or submit their final range...</p>
         </div>
+        <style jsx>{`
+          .submitted-card { text-align: center; }
+          .submitted-card h2 { margin-bottom: 1.5rem; }
+          .waiting-pulse { padding: 2rem; border: 1px dashed var(--accent-color); border-radius: 1rem; }
+        `}</style>
       </div>
     );
   }
 
   return (
-    <div className="card">
-      <h2 style={{ marginBottom: '1.5rem' }}>Common Ground Found</h2>
-      <p style={{ marginBottom: '1.5rem' }}>A match is possible within your shared flexibility. See the direction below:</p>
+    <div className="card r2-card">
+      <h2>Common Ground Found</h2>
+      <p>A match is possible within your shared flexibility. See the direction below:</p>
       
       {r1Range && (
         <MarketSpreadVisualizer 
@@ -429,26 +471,26 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
         />
       )}
 
-      <div style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
-        <h3 style={{ marginBottom: '1rem' }}>Final Round Submission</h3>
-        <p style={{ marginBottom: '1.5rem', fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+      <div className="r2-submission-box">
+        <h3>Final Round Submission</h3>
+        <p className="r2-instructions">
           Submit your final target below. Your new matching window <strong>must overlap</strong> with your original window ({formatCurrency(r1Range?.min || 0, deal.currency)} - {formatCurrency(r1Range?.max || 0, deal.currency)}).
         </p>
 
         <form onSubmit={onSubmit}>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <div className="input-row">
             <input className="input" type="number" required placeholder="Final Target" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
           </div>
 
           {Number(midpoint) > 0 && (
-            <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Final Commitment Preview</h4>
+            <div className="preview-box">
+              <h4>Final Commitment Preview</h4>
               <MarketSpreadVisualizer 
                 range={anchor} 
                 targets={targets}
                 currency={deal.currency} 
               />
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '1rem', textAlign: 'center' }}>
+              <p className="preview-desc">
                 Your final target will be compared against the other party&apos;s range.
               </p>
             </div>
@@ -464,6 +506,15 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
           </div>
 
           <style jsx>{`
+            .r2-card h2 { margin-bottom: 1.5rem; }
+            .r2-card > p { margin-bottom: 1.5rem; }
+            .r2-submission-box { margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; }
+            .r2-submission-box h3 { margin-bottom: 1rem; }
+            .r2-instructions { margin-bottom: 1.5rem; font-size: 1rem; color: var(--text-secondary); line-height: 1.5; }
+            .input-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+            .preview-box { margin-top: 2rem; margin-bottom: 2rem; }
+            .preview-box h4 { font-size: 1rem; color: var(--text-secondary); margin-bottom: 1rem; }
+            .preview-desc { font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem; text-align: center; }
             .r2-actions {
               display: grid;
               grid-template-columns: 1fr 1fr;
@@ -489,40 +540,119 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
 function ResultView({ deal }: { deal: Deal }) {
   const isMatch = deal.result?.outcome === 'MATCH';
   return (
-    <div className="card" style={{ textAlign: 'center', border: isMatch ? '2px solid var(--success-color)' : '1px solid var(--text-secondary)' }}>
+    <div className={`card result-card ${isMatch ? 'match' : 'no-match'}`}>
       {isMatch ? (
         <>
-          <h2 style={{ color: 'var(--success-color)', marginBottom: '1rem' }}>Alignment Achieved</h2>
-          <div style={{ fontSize: '4rem', fontWeight: 'bold', margin: '2rem 0' }}>{formatCurrency(deal.result?.value || 0, deal.currency)}</div>
+          <h2 className="success-title">Alignment Achieved</h2>
+          <div className="match-value">{formatCurrency(deal.result?.value || 0, deal.currency)}</div>
           <p>The system found a safe midpoint within your shared flexibility.</p>
         </>
       ) : (
         <>
-          <h2 style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>No Alignment</h2>
+          <h2 className="secondary-title">No Alignment</h2>
           <p>The protocol concluded without a match. No further information was revealed.</p>
         </>
       )}
+
+      <div className="next-steps">
+        <h4>Next Steps</h4>
+        <p>
+          The second party has also been notified of this outcome. 
+          If you ever need to reference this alignment in the future, just open this same link.
+        </p>
+      </div>
+
+      <style jsx>{`
+        .result-card { text-align: center; }
+        .result-card.match { border: 2px solid var(--success-color); }
+        .result-card.no-match { border: 1px solid var(--text-secondary); }
+        .success-title { color: var(--success-color); margin-bottom: 1rem; }
+        .match-value { font-size: 4rem; font-weight: bold; margin: 2rem 0; }
+        .secondary-title { color: var(--text-secondary); margin-bottom: 1rem; }
+        
+        .next-steps {
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          text-align: left;
+          max-width: 500px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .next-steps h4 {
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--text-secondary);
+          margin-bottom: 0.75rem;
+        }
+        .next-steps p {
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: var(--text-secondary);
+        }
+      `}</style>
     </div>
   );
 }
 
 function RejectedView() {
   return (
-    <div className="card" style={{ textAlign: 'center' }}>
-      <h2 style={{ color: 'var(--error-color)', marginBottom: '1.5rem' }}>Protocol Terminated</h2>
+    <div className="card reject-card">
+      <h2>Protocol Terminated</h2>
       <p>One of the parties chose not to proceed to Round 2. The deal is now closed.</p>
+      
+      <div className="next-steps">
+        <h4>Next Steps</h4>
+        <p>
+          The second party has also been notified of this outcome. 
+          If you ever need to reference this alignment in the future, just open this same link.
+        </p>
+      </div>
+
+      <style jsx>{`
+        .reject-card { text-align: center; }
+        .reject-card h2 { color: var(--error-color); margin-bottom: 1.5rem; }
+        
+        .next-steps {
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          text-align: left;
+          max-width: 500px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .next-steps h4 {
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--text-secondary);
+          margin-bottom: 0.75rem;
+        }
+        .next-steps p {
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: var(--text-secondary);
+        }
+      `}</style>
     </div>
   );
 }
 
-function AuthView({ handleLogin }: any) {
+function AuthView({ handleLogin }: { handleLogin: () => void }) {
   return (
     <main className="container">
-      <div className="card animate-fade-in" style={{ textAlign: 'center' }}>
-        <h2 style={{ marginBottom: '1.5rem' }}>Secure Access</h2>
-        <p style={{ marginBottom: '2rem', opacity: 0.8 }}>Please verify your identity to access this protocol.</p>
+      <div className="card animate-fade-in auth-card">
+        <h2>Secure Access</h2>
+        <p>Please verify your identity to access this protocol.</p>
         <button className="btn btn-primary" onClick={handleLogin}>Sign in with Google</button>
       </div>
+      <style jsx>{`
+        .auth-card { text-align: center; }
+        .auth-card h2 { margin-bottom: 1.5rem; }
+        .auth-card p { margin-bottom: 2rem; opacity: 0.8; }
+      `}</style>
     </main>
   );
 }
@@ -530,11 +660,16 @@ function AuthView({ handleLogin }: any) {
 function AccessDeniedView({ email }: { email: string }) {
   return (
     <main className="container">
-      <div className="card animate-fade-in" style={{ textAlign: 'center' }}>
-        <h2 style={{ color: 'var(--error-color)', marginBottom: '1.5rem' }}>Access Denied</h2>
+      <div className="card animate-fade-in denied-card">
+        <h2>Access Denied</h2>
         <p>Account <strong>{email}</strong> is not authorized for this deal.</p>
-        <button className="btn" style={{ marginTop: '2rem' }} onClick={() => signOut(auth)}>Sign out</button>
+        <button className="btn sign-out-btn" onClick={() => signOut(auth)}>Sign out</button>
       </div>
+      <style jsx>{`
+        .denied-card { text-align: center; }
+        .denied-card h2 { color: var(--error-color); margin-bottom: 1.5rem; }
+        .sign-out-btn { margin-top: 2rem; }
+      `}</style>
     </main>
   );
 }
