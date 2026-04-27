@@ -24,11 +24,11 @@ export default function LandingPage() {
       <section className="hero">
         <div className="hero-content animate-fade-in">
           <div className="badge-wrapper">
-            <span className="badge badge-active">Privacy-First Negotiation Protocol</span>
+            <span className="badge badge-active">Private Alignment Protocol</span>
           </div>
           <h1>Find Common Ground <br /> <span className="text-gradient">Without Revealing Your Hand</span></h1>
           <p className="hero-subtitle">
-            No Regret Deals uses a private alignment protocol to match parties on price, salary, or value.
+            No Regret Deals uses the <Link href="/protocol">Private Alignment Protocol</Link>{' '}to match parties on price, salary, or value.
             Strike a deal instantly if you overlap, or walk away with your privacy intact if you don&apos;t.
           </p>
           <div className="hero-actions">
@@ -65,7 +65,7 @@ export default function LandingPage() {
       {/* Perspectives Section */}
       <section className="perspectives" id="how-it-works">
         <div className="section-header">
-          <h2>Two Sides, One Goal: <span className="text-gradient">No Regrets</span></h2>
+          <h2>Two Sides, One Goal: <span className="text-gradient">No&nbsp;Regrets</span></h2>
           <p>Choose your perspective to see how the protocol protects you.</p>
         </div>
 
@@ -85,7 +85,7 @@ export default function LandingPage() {
             </button>
           </div>
 
-          <div className="tab-content card">
+          <div className={`tab-content card active-${activeTab}`}>
             {activeTab === 'partyA' ? (
               <div className="perspective-grid animate-fade-in">
                 <div className="perspective-text">
@@ -221,7 +221,7 @@ export default function LandingPage() {
       <section className="final-cta">
         <div className="card cta-card">
           <h2>Ready to find common ground?</h2>
-          <p>Stop guessing. Start aligning. Experience the future of fair negotiation.</p>
+          <p>Stop guessing. Start aligning.</p>
           <Link href="/create" className="btn btn-primary btn-lg">
             Start negotiations
           </Link>
@@ -417,7 +417,7 @@ export default function LandingPage() {
 
         /* Sections */
         .perspectives, .visual-comparison, .final-cta {
-          padding: 6rem 0;
+          padding: 3rem 0;
         }
 
         .section-header {
@@ -443,27 +443,33 @@ export default function LandingPage() {
 
         .tabs {
           display: flex;
-          gap: 0.5rem;
-          margin-bottom: 0;
+          gap: 0;
+          margin-bottom: -1px;
           width: 100%;
           position: relative;
           z-index: 2;
+          border-bottom: 1px solid var(--border-color);
+          transition: border-color 0.3s ease;
+        }
+
+        .tabs-container:has(.active-partyA) .tabs,
+        .tabs-container:has(.active-partyB) .tabs {
+          border-color: var(--accent-color);
         }
 
         .tab-btn {
           flex: 1;
           background: rgba(255, 255, 255, 0.02);
-          border: 1px solid var(--border-color);
+          border: 1px solid transparent;
           border-bottom: none;
           color: var(--text-secondary);
-          padding: 1.75rem 2rem;
+          padding: 1.5rem 2rem;
           border-radius: 1.5rem 1.5rem 0 0;
           cursor: pointer;
           font-weight: 700;
-          font-size: 1.35rem;
+          font-size: 1.25rem;
           transition: all 0.3s ease;
           position: relative;
-          top: 1px;
         }
 
         .tab-btn:hover:not(.active) {
@@ -474,26 +480,24 @@ export default function LandingPage() {
         .tab-btn.active {
           background: var(--surface-color);
           color: white;
-          border-color: var(--border-color);
+          border: 1px solid var(--accent-color);
+          border-bottom: 1px solid var(--surface-color);
           z-index: 3;
         }
 
-        .tab-btn.active::after {
-          content: "";
-          position: absolute;
-          bottom: -2px;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: var(--surface-color);
-        }
-
         .tab-content.card {
+          border: 1px solid var(--border-color);
+          border-top: none;
           border-top-left-radius: 0;
           border-top-right-radius: 0;
-          border-top: 1px solid var(--border-color);
           position: relative;
           z-index: 1;
+          transition: border-color 0.3s ease;
+        }
+
+        .tab-content.card.active-partyA,
+        .tab-content.card.active-partyB {
+          border-color: var(--accent-color);
         }
 
         .perspective-grid {
