@@ -10,9 +10,9 @@ export default function Footer() {
           Happy with the outcome? <a href="https://buymeacoffee.com/antonkulikov" target="_blank" rel="noopener noreferrer" className="footer-link">Buy me a coffee!</a>
         </p>
         <div className="footer-copyright">
-          © {new Date().getFullYear()} No Regret Deals. <Link href="/protocol" className="protocol-link">Bounded Alignment Protocol</Link>.
+          No Regret Deals: <Link href="/protocol" className="protocol-link">Private Alignment Protocol</Link>.
           <div className="author-link">
-            Made by <a href="https://antonkulikov.site/" target="_blank" rel="noopener noreferrer">AK</a>
+            Made with 🦾 by <a href="https://antonkulikov.site/" target="_blank" rel="noopener noreferrer">Anton Kulikov</a>.
           </div>
         </div>
       </div>
@@ -57,10 +57,11 @@ export default function Footer() {
         }
 
         .protocol-link {
-          color: inherit;
+          color: var(--text-primary);
           text-decoration: underline;
           text-underline-offset: 2px;
           transition: color 0.2s;
+          font-weight: 600;
         }
 
         .protocol-link:hover {
@@ -73,9 +74,9 @@ export default function Footer() {
         }
 
         .author-link a {
-          color: var(--text-primary);
+          color: var(--text-secondary);
           text-decoration: underline;
-          font-weight: 600;
+          font-weight: 400;
         }
 
         .author-link a:hover {

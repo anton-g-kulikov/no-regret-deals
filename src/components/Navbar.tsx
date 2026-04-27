@@ -14,7 +14,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await signOut();
       window.location.href = '/';
     } catch (error) {
       console.error('Error logging out:', error);
@@ -25,7 +25,13 @@ export default function Navbar() {
     <nav className="main-nav">
       <div className="nav-container">
         <Link href="/" className="nav-logo">
-          No Regret Deals
+          <div className="logo-container">
+            <div className="logo-symbol">
+              <div className="logo-line"></div>
+              <div className="logo-line"></div>
+            </div>
+            <span className="logo-text">No Regret Deals</span>
+          </div>
         </Link>
         
         <div className="nav-actions">
@@ -65,15 +71,71 @@ export default function Navbar() {
         }
 
         .nav-logo {
-          font-size: 1.25rem;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: var(--text-primary);
-          transition: opacity 0.2s;
+          text-decoration: none !important;
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
         }
 
-        .nav-logo:hover {
-          opacity: 0.8;
+        .logo-container {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: 0.75rem !important;
+          transition: transform 0.2s ease;
+        }
+
+        .nav-logo:hover .logo-container {
+          transform: translateY(-1px);
+        }
+
+        .logo-symbol {
+          position: relative;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .logo-line {
+          position: absolute;
+          height: 2.5px;
+          width: 24px;
+          border-radius: 99px;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-line:nth-child(1) {
+          background: var(--accent-color);
+          transform: rotate(15deg) translateX(-4px);
+          box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .logo-line:nth-child(2) {
+          background: #a78bfa;
+          transform: rotate(-15deg) translateX(4px);
+          box-shadow: 0 0 10px #a78bfa;
+        }
+
+        .logo-text {
+          font-size: 1.5rem;
+          font-weight: 800;
+          letter-spacing: -0.05em;
+          color: #fff;
+          line-height: 1;
+          white-space: nowrap;
+        }
+
+        .logo-container:hover .logo-line:nth-child(1) {
+          transform: rotate(15deg) translateX(-1px);
+          width: 28px;
+        }
+
+        .logo-container:hover .logo-line:nth-child(2) {
+          transform: rotate(-15deg) translateX(1px);
+          width: 28px;
         }
 
         .nav-actions {
@@ -104,6 +166,7 @@ export default function Navbar() {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
+          text-decoration: none !important;
         }
 
         .btn-logout:hover {
@@ -113,9 +176,37 @@ export default function Navbar() {
         }
 
         .btn-login {
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: var(--accent-color);
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #fff;
+          text-decoration: none !important;
+          padding: 0.6rem 1.25rem;
+          border-radius: 2rem;
+          background: linear-gradient(135deg, var(--accent-color), #4f46e5);
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+          transition: all 0.2s;
+          border: none;
+        }
+
+        .btn-login:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+          filter: brightness(1.1);
+        }
+
+        @media (max-width: 640px) {
+          .nav-logo {
+            font-size: 1.25rem;
+          }
+          .logo-symbol {
+            width: 28px;
+            height: 28px;
+          }
+          .logo-circle {
+            width: 16px;
+            height: 16px;
+            border-width: 2px;
+          }
         }
 
         @media (min-width: 640px) {
