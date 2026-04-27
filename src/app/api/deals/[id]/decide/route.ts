@@ -26,8 +26,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in decision:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message.includes('Unauthorized') ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -32,8 +32,11 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ dealId }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating deal:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    // Use 400 for bad request/validation, otherwise 500
+    const status = message.includes('exceeds') || message.includes('must overlap') ? 400 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
