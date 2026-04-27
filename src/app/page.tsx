@@ -240,7 +240,7 @@ export default function LandingPage() {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 4rem;
-          padding: 8rem 0;
+          padding: 0rem 0;
           align-items: center;
         }
 
