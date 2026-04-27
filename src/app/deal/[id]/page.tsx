@@ -130,37 +130,37 @@ export default function DealPage() {
 function MarketSpreadVisualizer({ range, targets, currency, hint }: { range: { min: number, max: number }, targets: { min: number, max: number }, currency: string, hint?: string }) {
   if (range.min <= 0 || range.max < range.min) return null;
   
-  const rawMin = targets.min * 0.9; // 10% visual padding
-  const rawMax = targets.max * 1.1;
+  const rawMin = targets.min * 0.85; // 15% visual padding
+  const rawMax = targets.max * 1.15;
   const totalRange = rawMax - rawMin;
   const leftPadding = ((range.min - rawMin) / totalRange) * 100;
   const width = ((range.max - range.min) / totalRange) * 100;
-
-  const targetLeftPadding = ((targets.min - rawMin) / totalRange) * 100;
-  const targetWidth = ((targets.max - targets.min) / totalRange) * 100;
+  const midpoint = Math.round((range.min + range.max) / 2);
 
   return (
-    <div style={{ margin: '1.5rem 0', position: 'relative' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.4, marginBottom: '1rem', padding: '0 4px' }}>
-        <span>{formatCurrency(targets.min, currency)} (Lowest Threshold)</span>
-        <span>{formatCurrency(targets.max, currency)} (Highest Threshold)</span>
+    <div style={{ margin: '2rem 0', position: 'relative' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', padding: '0 4px', fontWeight: 500 }}>
+        <span>Min Threshold: {formatCurrency(targets.min, currency)}</span>
+        <span>Max Threshold: {formatCurrency(targets.max, currency)}</span>
       </div>
       
-      <div style={{ height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+      <div style={{ height: '48px', background: 'var(--surface-hover)', borderRadius: '12px', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
         <div style={{ 
           position: 'absolute', 
-          left: `${targetLeftPadding}%`, 
-          width: `${targetWidth}%`, 
+          left: `${leftPadding}%`, 
+          width: `${width}%`, 
           height: '100%', 
-          background: 'var(--accent-color)',
+          background: 'rgba(99, 102, 241, 0.15)',
           zIndex: 1,
-          boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)',
+          borderLeft: '2px solid rgba(99, 102, 241, 0.6)',
+          borderRight: '2px solid rgba(99, 102, 241, 0.6)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'white',
-          fontSize: '0.65rem',
+          color: 'var(--accent-hover)',
+          fontSize: '0.9rem',
           fontWeight: 'bold',
+          letterSpacing: '0.05em'
         }}>
           SECURE RANGE
         </div>
@@ -169,36 +169,34 @@ function MarketSpreadVisualizer({ range, targets, currency, hint }: { range: { m
           position: 'absolute', 
           left: `${leftPadding + (width/2)}%`, 
           width: '4px', 
-          height: '110%', 
-          top: '-5%',
-          background: 'white',
+          height: '100%', 
+          background: 'var(--text-primary)',
           zIndex: 2,
-          boxShadow: '0 0 15px white',
+          boxShadow: '0 0 10px rgba(255,255,255,0.5)',
           transform: 'translateX(-50%)'
         }} />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginTop: '0.5rem', padding: '0 4px', opacity: 0.8 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${leftPadding + (width/2)}%`, transform: 'translateX(-50%)' }}>
-          <div style={{ height: '6px', width: '2px', background: 'white', marginBottom: '4px' }} />
-          <span style={{ color: 'white', fontWeight: 'bold' }}>IDEAL TARGET: {formatCurrency(Math.round((range.min + range.max)/2), currency)}</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${targetLeftPadding}%`, transform: 'translateX(-50%)' }}>
-          <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
-          <span>{formatCurrency(targets.min, currency)}</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${targetLeftPadding + targetWidth}%`, transform: 'translateX(-50%)' }}>
-          <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
-          <span>{formatCurrency(targets.max, currency)}</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${leftPadding + width}%`, transform: 'translateX(-50%)' }}>
-          <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
-          <span>{formatCurrency(range.max, currency)}</span>
+      <div style={{ position: 'relative', height: '40px', marginTop: '0.5rem' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          position: 'absolute', 
+          left: `${leftPadding + (width/2)}%`, 
+          transform: 'translateX(-50%)',
+          color: 'var(--text-primary)',
+          fontWeight: 'bold',
+          zIndex: 3,
+          fontSize: '0.9rem'
+        }}>
+          <div style={{ height: '8px', width: '2px', background: 'var(--text-primary)', marginBottom: '4px' }} />
+          <span>TARGET: {formatCurrency(midpoint, currency)}</span>
         </div>
       </div>
 
       {hint && (
-        <div style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--accent-color)', fontWeight: 'bold', fontSize: '1rem' }}>
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--accent-color)', fontWeight: 'bold', fontSize: '1.1rem', background: 'rgba(99,102,241,0.1)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(99,102,241,0.2)' }}>
           {hint === 'ABOVE' ? '↑ THE OTHER PARTY IS HIGHER' : '↓ THE OTHER PARTY IS LOWER'}
         </div>
       )}
@@ -215,9 +213,9 @@ function Header({ deal, userEmail }: { deal: Deal, userEmail: string }) {
           {deal.status.replace(/_/g, ' ')}
         </span>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', opacity: 0.7, fontSize: '0.85rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
         <p>ID: {deal.id}</p>
-        <p>Signed in as: <strong>{userEmail}</strong></p>
+        <p>Signed in as: <strong style={{ color: 'var(--text-primary)' }}>{userEmail}</strong></p>
       </div>
     </header>
   );
@@ -231,8 +229,8 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
       <p style={{ marginBottom: '1.5rem' }}>Your initial range and <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong> are locked in.</p>
       
       <div style={{ background: 'var(--surface-hover)', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
-        <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem', opacity: 0.7 }}>Share this URL with Party B:</p>
-        <code style={{ wordBreak: 'break-all', color: 'var(--accent-color)' }}>{url}</code>
+        <p style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Share this URL with Party B:</p>
+        <code style={{ wordBreak: 'break-all', color: 'var(--accent-color)', fontSize: '0.95rem' }}>{url}</code>
         <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} onClick={() => {
           navigator.clipboard.writeText(url);
           alert('URL copied to clipboard');
@@ -240,8 +238,8 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
       </div>
 
       <div style={{ borderLeft: '4px solid var(--accent-color)', paddingLeft: '1rem', margin: '2rem 0' }}>
-        <h4 style={{ color: 'var(--accent-color)' }}>The Anchoring Rule</h4>
-        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+        <h4 style={{ color: 'var(--accent-color)', fontSize: '1.05rem' }}>The Anchoring Rule</h4>
+        <p style={{ fontSize: '1rem', marginTop: '0.5rem', lineHeight: '1.5' }}>
           Remember: If no match is found now, your second range (if you proceed) <strong>must overlap</strong> with the range you just submitted.
         </p>
       </div>
@@ -262,8 +260,8 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
       </p>
 
       <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1.25rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-        <h4 style={{ color: 'var(--accent-color)', marginBottom: '0.5rem' }}>🛡️ The Privacy Shield</h4>
-        <p style={{ fontSize: '0.875rem' }}>
+        <h4 style={{ color: 'var(--accent-color)', marginBottom: '0.5rem', fontSize: '1.05rem' }}>🛡️ The Privacy Shield</h4>
+        <p style={{ fontSize: '1rem', lineHeight: '1.5' }}>
           If a match is feasible, the system will only reveal direction. If you are too far apart, the system reveals <strong>nothing</strong>—not even direction.
         </p>
       </div>
@@ -277,12 +275,12 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
 
           <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <h4 style={{ fontSize: '0.875rem', opacity: 0.7 }}>Secure Range Preview</h4>
-              <span className="badge badge-active" style={{ fontSize: '0.75rem' }}>
+              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>Secure Range Preview</h4>
+              <span className="badge badge-active" style={{ fontSize: '0.9rem' }}>
                 {formatCurrency(anchor.min, deal.currency)} – {formatCurrency(anchor.max, deal.currency)}
               </span>
             </div>
-            <p style={{ fontSize: '0.75rem', opacity: 0.5, marginBottom: '1.5rem', lineHeight: '1.4' }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
               Your private range centered on your target. Used for the initial match check.
             </p>
             
@@ -338,7 +336,7 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
 
       <div style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
         <h3 style={{ marginBottom: '1rem' }}>Final Round Submission</h3>
-        <p style={{ marginBottom: '1.5rem', fontSize: '0.9rem', opacity: 0.7 }}>
+        <p style={{ marginBottom: '1.5rem', fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
           Submit your final target below. Your new matching window <strong>must overlap</strong> with your original window ({formatCurrency(r1Range?.min || 0, deal.currency)} - {formatCurrency(r1Range?.max || 0, deal.currency)}).
         </p>
 
@@ -349,13 +347,13 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
 
           {Number(midpoint) > 0 && (
             <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-              <h4 style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>Final Commitment Preview</h4>
+              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Final Commitment Preview</h4>
               <MarketSpreadVisualizer 
                 range={anchor} 
                 targets={targets}
                 currency={deal.currency} 
               />
-              <p style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '1rem', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '1rem', textAlign: 'center' }}>
                 Your final matching window using your original <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong>.
               </p>
             </div>
