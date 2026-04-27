@@ -23,6 +23,7 @@ export interface Deal {
   id: string;
   currency: string;
   spread: number;
+  flexibility: number;
   partyAEmail: string;
   partyBEmail: string;
   status: DealStatus;

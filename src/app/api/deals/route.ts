@@ -10,9 +10,9 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { currency, spread, partyBEmail, initialRange } = body;
+    const { currency, spread, flexibility, partyBEmail, initialRange } = body;
 
-    if (!currency || !spread || !partyBEmail || !initialRange) {
+    if (!currency || !spread || flexibility === undefined || !partyBEmail || !initialRange) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
       spread,
       partyAEmail: user.email,
       partyBEmail,
+      flexibility,
       initialRange,
     });
 

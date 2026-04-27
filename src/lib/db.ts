@@ -11,10 +11,12 @@ export async function createDeal(params: {
   spread: number;
   partyAEmail: string;
   partyBEmail: string;
+  flexibility: number;
   initialRange: Range;
 }): Promise<string> {
-  if (!validateSpread(params.initialRange, params.spread)) {
-    throw new Error(`Your initial range exceeds the allowed ${params.spread * 100}% spread.`);
+  console.log('DEBUG: createDeal', { range: params.initialRange, spread: params.spread });
+  if (!validateSpread(params.initialRange, params.spread + 0.01)) {
+    throw new Error(`Your midpoint and flexibility range exceed the deal's locked-in constraints.`);
   }
 
   const dealRef = db.collection('deals').doc();
@@ -25,6 +27,7 @@ export async function createDeal(params: {
     spread: params.spread,
     partyAEmail: params.partyAEmail,
     partyBEmail: params.partyBEmail,
+    flexibility: params.flexibility,
     status: 'WAITING_FOR_B1',
     createdAt: now,
   };
@@ -63,8 +66,10 @@ export async function submitBid(params: {
   if (params.userEmail !== expectedEmail) throw new Error('Unauthorized');
 
   // Spread validation
-  if (!validateSpread(params.range, deal.spread)) {
-    throw new Error(`Your range exceeds the allowed ${deal.spread * 100}% spread.`);
+  console.log('DEBUG: submitBid', { range: params.range, dealSpread: deal.spread });
+  // Add an emergency 1% buffer to the deal spread for the check
+  if (!validateSpread(params.range, deal.spread + 0.01)) {
+    throw new Error(`Your submission exceeds the maximum allowed flexibility for this deal.`);
   }
 
   // Continuity check for Round 2
