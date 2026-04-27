@@ -11,41 +11,30 @@ export default function Home() {
   const [creating, setCreating] = useState(false);
   
   // Core Form State
-  const [currency, setCurrency] = useState('$');
+  const [midpoint, setMidpoint] = useState('100000');
+  const [selectedSpread, setSelectedSpread] = useState(0.2); // 20%
   const [partyBEmail, setPartyBEmail] = useState('');
-  
-  // Default values for 20% spread with 100-110 anchor:
-  // 100 / 1.2 = 83.33 (84 is safe)
-  // 110 * 1.2 = 132
-  const [min, setMin] = useState('100');
-  const [max, setMax] = useState('110');
-  
-  // Negotiation Room (Discovery Mode)
-  const [targetReachMin, setTargetReachMin] = useState('84');
-  const [targetReachMax, setTargetReachMax] = useState('132');
-  
-  // Derived State
-  const { spread, limitingSide } = useMemo(() => {
-    const r1Min = Number(min);
-    const r1Max = Number(max);
-    const tMin = Number(targetReachMin);
-    const tMax = Number(targetReachMax);
+  const [currency, setCurrency] = useState('$');
 
-    if (r1Min > 0 && r1Max >= r1Min && tMin > 0 && tMax > 0 && tMin <= r1Min && tMax >= r1Max) {
-      const sLow = (r1Min / tMin) - 1;
-      const sHigh = (tMax / r1Max) - 1;
-      
-      const calculated = Math.max(0.05, Math.max(sLow, sHigh));
-      let side: 'min' | 'max' | 'both' = 'both';
+  // Derived Protocol Values
+  const { anchor, targets, spread } = useMemo(() => {
+    const m = Number(midpoint);
+    if (!m || m <= 0) return { anchor: { min: 0, max: 0 }, targets: { min: 0, max: 0 }, spread: selectedSpread };
 
-      if (Math.abs(sLow - sHigh) < 0.01) side = 'both';
-      else if (sLow > sHigh) side = 'min';
-      else side = 'max';
+    // Full flexibility range as the initial bid
+    const tMin = Math.round(m * (1 - selectedSpread));
+    const tMax = Math.round(m * (1 + selectedSpread));
 
-      return { spread: calculated, limitingSide: side };
-    }
-    return { spread: 0.2, limitingSide: 'both' as const };
-  }, [min, max, targetReachMin, targetReachMax]);
+    // Calculate spread from the EXACT rounded values we are about to store/submit.
+    // This avoids "exceeds spread" errors caused by tiny rounding differences.
+    const protocolSpread = (tMax / tMin) - 1;
+
+    return {
+      anchor: { min: tMin, max: tMax },
+      targets: { min: tMin, max: tMax },
+      spread: protocolSpread
+    };
+  }, [midpoint, selectedSpread]);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -54,27 +43,6 @@ export default function Home() {
     });
   }, []);
 
-  const updateMin = (val: string) => {
-    setMin(val);
-    if (Number(targetReachMin) > Number(val)) setTargetReachMin(val);
-  };
-
-  const updateMax = (val: string) => {
-    setMax(val);
-    if (Number(targetReachMax) < Number(val)) setTargetReachMax(val);
-  };
-
-  const updateTargetMin = (val: string) => {
-    const v = Number(val);
-    const rMin = Number(min);
-    setTargetReachMin(v > rMin ? min : val);
-  };
-
-  const updateTargetMax = (val: string) => {
-    const v = Number(val);
-    const rMax = Number(max);
-    setTargetReachMax(v < rMax ? max : val);
-  };
 
   const handleLogin = async () => {
     try {
@@ -100,8 +68,9 @@ export default function Home() {
         body: JSON.stringify({
           currency,
           spread,
+          flexibility: selectedSpread,
           partyBEmail,
-          initialRange: { min: Number(min), max: Number(max) }
+          initialRange: anchor
         }),
       });
 
@@ -153,63 +122,65 @@ export default function Home() {
               </div>
 
               <div className="form-group">
-                <label className="label">Currency</label>
-                <input 
-                  className="input" 
-                  type="text" 
-                  required 
-                  placeholder="$" 
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                />
-              </div>
-
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem', marginTop: '2rem' }}>
-                <h3 style={{ marginBottom: '1rem' }}>1. Your Secure Anchor</h3>
-                <p style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1.5rem' }}>
-                  The private range you are comfortable with right now. You won&apos;t have to move from this unless a match is found.
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label className="label">Min</label>
-                    <input className="input" type="number" required value={min} onChange={(e) => updateMin(e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label className="label">Max</label>
-                    <input className="input" type="number" required value={max} onChange={(e) => updateMax(e.target.value)} />
-                  </div>
+                <label className="label">Mid-Point Target (Ideal Price)</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input 
+                    className="input" 
+                    type="text" 
+                    style={{ width: '60px', textAlign: 'center' }}
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                  />
+                  <input 
+                    className="input" 
+                    type="number" 
+                    required 
+                    placeholder="100,000"
+                    value={midpoint}
+                    onChange={(e) => setMidpoint(e.target.value)}
+                  />
                 </div>
               </div>
 
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem', marginTop: '1rem' }}>
-                <h3 style={{ marginBottom: '1rem' }}>2. Your Negotiation Intent</h3>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem', marginTop: '2rem' }}>
+                <h3 style={{ marginBottom: '1rem' }}>Negotiation Flexibility</h3>
                 <p style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1.5rem' }}>
-                  Set the boundaries of where you are willing to move if the other party is close.
+                  How far are you willing to move from your ideal price if the other party is close?
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label className="label">Target Min Consideration</label>
-                    <input className="input" type="number" required value={targetReachMin} onChange={(e) => updateTargetMin(e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label className="label">Target Max Consideration</label>
-                    <input className="input" type="number" required value={targetReachMax} onChange={(e) => updateTargetMax(e.target.value)} />
-                  </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+                  {[0.1, 0.15, 0.2, 0.3].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={`btn ${selectedSpread === s ? 'btn-active' : ''}`}
+                      style={{ 
+                        padding: '0.75rem', 
+                        fontSize: '0.875rem',
+                        background: selectedSpread === s ? 'var(--accent-color)' : 'rgba(255,255,255,0.05)',
+                        border: selectedSpread === s ? 'none' : '1px solid rgba(255,255,255,0.1)'
+                      }}
+                      onClick={() => setSelectedSpread(s)}
+                    >
+                      {formatPercent(s)}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', opacity: 0.7 }}>Threshold Preview</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.875rem', opacity: 0.7 }}>Range Preview</h4>
                   <span className="badge badge-active" style={{ fontSize: '0.75rem' }}>
-                    PROTOCOL SPREAD: {formatPercent(spread)}
+                    {formatCurrency(anchor.min, currency)} – {formatCurrency(anchor.max, currency)}
                   </span>
                 </div>
+                <p style={{ fontSize: '0.75rem', opacity: 0.5, marginBottom: '1.5rem', lineHeight: '1.4' }}>
+                  This is your private matching window. If the other party&apos;s window overlaps with yours, an immediate match is found at the midpoint.
+                </p>
                 
                 <MarketSpreadVisualizer 
-                  range={{ min: Number(min) || 0, max: Number(max) || 0 }} 
-                  targets={{ min: Number(targetReachMin) || 0, max: Number(targetReachMax) || 0 }}
-                  spread={spread} 
+                  range={anchor} 
+                  targets={targets}
                   currency={currency} 
                 />
                 
@@ -233,14 +204,11 @@ export default function Home() {
   );
 }
 
-function MarketSpreadVisualizer({ range, targets, spread, currency }: { range: { min: number, max: number }, targets: { min: number, max: number }, spread: number, currency: string }) {
+function MarketSpreadVisualizer({ range, targets, currency }: { range: { min: number, max: number }, targets: { min: number, max: number }, currency: string }) {
   if (range.min <= 0 || range.max < range.min) return null;
   
-  const reachMin = calculateSafeReach(range.min, spread, 'min');
-  const reachMax = calculateSafeReach(range.max, spread, 'max');
-  
-  const rawMin = range.min / (1 + spread);
-  const rawMax = range.max * (1 + spread);
+  const rawMin = targets.min * 0.9; // Add 10% visual padding
+  const rawMax = targets.max * 1.1;
   const totalRange = rawMax - rawMin;
   
   const leftPadding = ((range.min - rawMin) / totalRange) * 100;
@@ -252,8 +220,8 @@ function MarketSpreadVisualizer({ range, targets, spread, currency }: { range: {
   return (
     <div style={{ margin: '1.5rem 0', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.4, marginBottom: '1rem', padding: '0 4px' }}>
-        <span>{formatCurrency(reachMin, currency)} (Lowest Threshold)</span>
-        <span>{formatCurrency(reachMax, currency)} (Highest Threshold)</span>
+        <span>{formatCurrency(targets.min, currency)} (Lowest Threshold)</span>
+        <span>{formatCurrency(targets.max, currency)} (Highest Threshold)</span>
       </div>
       
       <div style={{ height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -265,32 +233,34 @@ function MarketSpreadVisualizer({ range, targets, spread, currency }: { range: {
           background: 'rgba(99, 102, 241, 0.1)',
           zIndex: 1,
           borderLeft: '2px solid rgba(99, 102, 241, 0.5)',
-          borderRight: '2px solid rgba(99, 102, 241, 0.5)',
-        }} />
-
-        <div style={{ 
-          position: 'absolute', 
-          left: `${leftPadding}%`, 
-          width: `${width}%`, 
-          height: '100%', 
-          background: 'var(--accent-color)',
+          boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
           fontSize: '0.65rem',
           fontWeight: 'bold',
-          zIndex: 2,
-          boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
         }}>
-          ANCHOR
+          SECURE RANGE
         </div>
+
+        <div style={{ 
+          position: 'absolute', 
+          left: `${leftPadding + (width/2)}%`, 
+          width: '4px', 
+          height: '110%', 
+          top: '-5%',
+          background: 'white',
+          zIndex: 2,
+          boxShadow: '0 0 15px white',
+          transform: 'translateX(-50%)'
+        }} />
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginTop: '0.5rem', padding: '0 4px', opacity: 0.8 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${targetLeftPadding}%`, transform: 'translateX(-50%)' }}>
-          <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
-          <span>{formatCurrency(targets.min, currency)}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${leftPadding + (width/2)}%`, transform: 'translateX(-50%)' }}>
+          <div style={{ height: '6px', width: '2px', background: 'white', marginBottom: '4px' }} />
+          <span style={{ color: 'white', fontWeight: 'bold' }}>IDEAL TARGET: {formatCurrency(Math.round((range.min + range.max)/2), currency)}</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${targetLeftPadding + targetWidth}%`, transform: 'translateX(-50%)' }}>
           <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
