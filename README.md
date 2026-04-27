@@ -65,6 +65,23 @@ npm install -g firebase-tools
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Deployment
+
+This application is designed to be deployed using **Firebase App Hosting**, which natively supports Next.js applications, server-side rendering, and API routes.
+
+1. **Deploying the Application**
+   Deploy the web app using the Firebase CLI:
+   ```bash
+   npx firebase apphosting:backends:create
+   ```
+   Or, if the backend is already set up, simply push your code to your GitHub repository to trigger an automatic App Hosting rollout.
+
+2. **Deploying Security Rules**
+   Any changes made to the database access policies must be deployed manually:
+   ```bash
+   npx firebase deploy --only firestore:rules
+   ```
+
 ## Testing
 
 The project includes a suite of tests ensuring the mathematical logic of the alignment engine is flawless.
