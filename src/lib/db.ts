@@ -13,6 +13,7 @@ export async function createDeal(params: {
   partyBEmail: string;
   flexibility: number;
   initialRange: Range;
+  description?: string;
 }): Promise<string> {
   console.log('DEBUG: createDeal', { range: params.initialRange, spread: params.spread });
   if (!validateSpread(params.initialRange, params.spread + 0.01)) {
@@ -28,6 +29,7 @@ export async function createDeal(params: {
     partyAEmail: params.partyAEmail,
     partyBEmail: params.partyBEmail,
     flexibility: params.flexibility,
+    description: params.description,
     status: 'WAITING_FOR_B1',
     createdAt: now,
   };

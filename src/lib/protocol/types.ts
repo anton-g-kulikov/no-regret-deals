@@ -26,6 +26,7 @@ export interface Deal {
   flexibility: number;
   partyAEmail: string;
   partyBEmail: string;
+  description?: string;
   status: DealStatus;
   result?: DealResult;
   createdAt: number;
