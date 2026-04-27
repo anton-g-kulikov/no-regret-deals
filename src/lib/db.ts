@@ -47,9 +47,6 @@ export async function createDeal(params: {
   return dealRef.id;
 }
 
-/**
- * Submits a bid and triggers protocol evaluation if necessary.
- */
 export async function submitBid(params: {
   dealId: string;
   party: Party;
@@ -58,48 +55,107 @@ export async function submitBid(params: {
   userEmail: string;
 }): Promise<void> {
   const dealRef = db.collection('deals').doc(params.dealId);
-  const dealDoc = await dealRef.get();
-  
-  if (!dealDoc.exists) throw new Error('Deal not found');
-  const deal = dealDoc.data() as Deal;
+  const bidRef = dealRef.collection('bids').doc(`${params.party}_${params.round}`);
 
-  // Identity verification
-  const expectedEmail = params.party === 'A' ? deal.partyAEmail : deal.partyBEmail;
-  if (params.userEmail !== expectedEmail) throw new Error('Unauthorized');
+  await db.runTransaction(async (t) => {
+    const dealDoc = await t.get(dealRef);
+    if (!dealDoc.exists) throw new Error('Deal not found');
+    const deal = dealDoc.data() as Deal;
 
-  // Spread validation
-  console.log('DEBUG: submitBid', { range: params.range, dealSpread: deal.spread });
-  // Add an emergency 1% buffer to the deal spread for the check
-  if (!validateSpread(params.range, deal.spread + 0.01)) {
-    throw new Error(`Your submission exceeds the maximum allowed flexibility for this deal.`);
-  }
+    // Identity verification
+    const expectedEmail = params.party === 'A' ? deal.partyAEmail : deal.partyBEmail;
+    if (params.userEmail !== expectedEmail) throw new Error('Unauthorized');
 
-  // Continuity check for Round 2
-  if (params.round === 2) {
-    const bid1Doc = await dealRef.collection('bids').doc(`${params.party}_1`).get();
-    if (bid1Doc.exists) {
-      const range1 = bid1Doc.data()?.range as Range;
-      if (!validateContinuity(range1, params.range)) {
-        throw new Error('Round 2 range must overlap with your Round 1 range.');
+    // Spread validation
+    // Add an emergency 1% buffer to the deal spread for the check
+    if (!validateSpread(params.range, deal.spread + 0.01)) {
+      throw new Error(`Your submission exceeds the maximum allowed flexibility for this deal.`);
+    }
+
+    // Continuity check for Round 2
+    if (params.round === 2) {
+      const bid1Ref = dealRef.collection('bids').doc(`${params.party}_1`);
+      const bid1Doc = await t.get(bid1Ref);
+      if (bid1Doc.exists) {
+        const range1 = bid1Doc.data()?.range as Range;
+        if (!validateContinuity(range1, params.range)) {
+          throw new Error('Round 2 range must overlap with your Round 1 range.');
+        }
       }
     }
-  }
 
-  // Store the bid
-  const bidId = `${params.party}_${params.round}`;
-  await dealRef.collection('bids').doc(bidId).set({
-    party: params.party,
-    round: params.round,
-    range: params.range,
-    timestamp: Date.now()
+    // Prepare bid data
+    const bidData = {
+      party: params.party,
+      round: params.round,
+      range: params.range,
+      timestamp: Date.now()
+    };
+    t.set(bidRef, bidData);
+
+    // Evaluate state transitions
+    if (params.party === 'B' && params.round === 1) {
+      const bidA1Ref = dealRef.collection('bids').doc('A_1');
+      const bidA1Doc = await t.get(bidA1Ref);
+      const rangeA1 = bidA1Doc.data()?.range as Range;
+
+      const result = evaluateRound1(rangeA1, params.range);
+      
+      if (result.outcome === 'MATCH') {
+        t.update(dealRef, {
+          status: 'COMPLETED',
+          result: { outcome: 'MATCH', value: result.value }
+        });
+      } else {
+        const feasibility = checkFeasibility(rangeA1, params.range, deal.spread);
+        if (feasibility.feasible) {
+          t.update(dealRef, {
+            status: 'DECIDING_ON_R2',
+            result: { 
+              outcome: 'NO_MATCH', 
+              directionRevealed: true,
+              direction: feasibility.direction 
+            }
+          });
+        } else {
+          t.update(dealRef, {
+            status: 'COMPLETED',
+            result: { outcome: 'NO_MATCH', directionRevealed: false }
+          });
+        }
+      }
+    } else if (params.round === 2) {
+      const counterpartParty = params.party === 'A' ? 'B' : 'A';
+      const counterpartBidRef = dealRef.collection('bids').doc(`${counterpartParty}_2`);
+      const counterpartBidDoc = await t.get(counterpartBidRef);
+      
+      const update: Record<string, any> = {};
+      if (params.party === 'A') {
+        update.round2SubmittedA = true;
+        update.round2AcceptedA = true;
+      } else {
+        update.round2SubmittedB = true;
+        update.round2AcceptedB = true;
+      }
+
+      if (counterpartBidDoc.exists) {
+        const counterpartRange = counterpartBidDoc.data()?.range;
+        const bids = {
+          [params.party]: params.range,
+          [counterpartParty]: counterpartRange
+        };
+
+        const result = evaluateRound1(bids.A, bids.B);
+        
+        Object.assign(update, {
+          status: 'COMPLETED',
+          result: { outcome: result.outcome, value: result.value }
+        });
+      }
+      
+      t.update(dealRef, update);
+    }
   });
-
-  // Evaluate state transitions
-  if (params.party === 'B' && params.round === 1) {
-    await processRound1(dealRef, deal, params.range);
-  } else if (params.round === 2) {
-    await checkRound2Completion(dealRef, deal, params.party, params.range);
-  }
 }
 
 /**
@@ -112,87 +168,27 @@ export async function decideRound2(params: {
   userEmail: string;
 }): Promise<void> {
   const dealRef = db.collection('deals').doc(params.dealId);
-  const dealDoc = await dealRef.get();
-  
-  if (!dealDoc.exists) throw new Error('Deal not found');
-  const deal = dealDoc.data() as Deal;
 
-  // Identity verification
-  const expectedEmail = params.party === 'A' ? deal.partyAEmail : deal.partyBEmail;
-  if (params.userEmail !== expectedEmail) throw new Error('Unauthorized');
+  await db.runTransaction(async (t) => {
+    const dealDoc = await t.get(dealRef);
+    if (!dealDoc.exists) throw new Error('Deal not found');
+    const deal = dealDoc.data() as Deal;
 
-  if (!params.accept) {
-    await dealRef.update({ status: 'REJECTED' });
-    return;
-  }
+    // Identity verification
+    const expectedEmail = params.party === 'A' ? deal.partyAEmail : deal.partyBEmail;
+    if (params.userEmail !== expectedEmail) throw new Error('Unauthorized');
 
-  const update: any = {};
-  if (params.party === 'A') update.round2AcceptedA = true;
-  if (params.party === 'B') update.round2AcceptedB = true;
-
-  await dealRef.update(update);
-}
-
-async function processRound1(dealRef: any, deal: Deal, rangeB1: Range) {
-  const bidA1Doc = await dealRef.collection('bids').doc('A_1').get();
-  const rangeA1 = bidA1Doc.data()?.range as Range;
-
-  const result = evaluateRound1(rangeA1, rangeB1);
-  
-  if (result.outcome === 'MATCH') {
-    await dealRef.update({
-      status: 'COMPLETED',
-      result: { outcome: 'MATCH', value: result.value }
-    });
-  } else {
-    const feasibility = checkFeasibility(rangeA1, rangeB1, deal.spread);
-    if (feasibility.feasible) {
-      await dealRef.update({
-        status: 'DECIDING_ON_R2',
-        result: { 
-          outcome: 'NO_MATCH', 
-          directionRevealed: true,
-          direction: feasibility.direction 
-        }
-      });
-    } else {
-      await dealRef.update({
-        status: 'COMPLETED',
-        result: { outcome: 'NO_MATCH', directionRevealed: false }
-      });
+    if (!params.accept) {
+      t.update(dealRef, { status: 'REJECTED' });
+      return;
     }
-  }
-}
 
-async function checkRound2Completion(dealRef: any, deal: Deal, currentParty: Party, currentRange: Range) {
-  const counterpartParty = currentParty === 'A' ? 'B' : 'A';
-  const counterpartBidDoc = await dealRef.collection('bids').doc(`${counterpartParty}_2`).get();
-  
-  const update: any = {};
-  // If you submit R2 bid, you implicitly accept R2
-  if (currentParty === 'A') {
-    update.round2SubmittedA = true;
-    update.round2AcceptedA = true;
-  } else {
-    update.round2SubmittedB = true;
-    update.round2AcceptedB = true;
-  }
+    const update: Record<string, any> = {};
+    if (params.party === 'A') update.round2AcceptedA = true;
+    if (params.party === 'B') update.round2AcceptedB = true;
 
-  if (counterpartBidDoc.exists) {
-    const bids = {
-      [currentParty]: currentRange,
-      [counterpartParty]: counterpartBidDoc.data().range
-    };
-
-    const result = evaluateRound1(bids.A, bids.B);
-    
-    Object.assign(update, {
-      status: 'COMPLETED',
-      result: { outcome: result.outcome, value: result.value }
-    });
-  }
-  
-  await dealRef.update(update);
+    t.update(dealRef, update);
+  });
 }
 
 /**

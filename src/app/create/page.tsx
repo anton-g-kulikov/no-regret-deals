@@ -43,7 +43,7 @@ export default function CreateDealPage() {
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
     }
   };
@@ -75,32 +75,37 @@ export default function CreateDealPage() {
       
       const { dealId } = await res.json();
       window.location.href = `/deal/${dealId}`;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error:', error);
-      alert(error.message);
+      if (error instanceof Error) alert(error.message);
+      else alert('An unexpected error occurred');
     } finally {
       setCreating(false);
     }
   };
 
-  if (loading) return <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
-    <div className="animate-pulse" style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>Loading authentication...</div>
+  if (loading) return <div className="container loading-container">
+    <div className="animate-pulse loading-text">Loading authentication...</div>
+    <style jsx>{`
+      .loading-container { display: flex; align-items: center; justify-content: center; height: 80vh; }
+      .loading-text { font-size: 1.25rem; color: var(--text-secondary); }
+    `}</style>
   </div>;
 
   return (
-    <main className="container" style={{ maxWidth: '800px', paddingBottom: '6rem' }}>
+    <main className="container create-main">
       <div className="animate-fade-in">
-        <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>Initialize New Alignment</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
+        <header className="page-header">
+          <h1>Initialize New Alignment</h1>
+          <p className="subtitle">
             Set your target and invite your counterpart.
           </p>
         </header>
 
         {!user ? (
-          <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-            <h2 style={{ marginBottom: '1.5rem' }}>Identity Required</h2>
-            <p style={{ marginBottom: '2.5rem', color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 2.5rem' }}>
+          <div className="card auth-required-card">
+            <h2>Identity Required</h2>
+            <p className="auth-desc">
               We use Google Authentication to verify your identity and ensure the privacy of your deals.
             </p>
             <button className="btn btn-primary btn-lg" onClick={handleLogin}>
@@ -108,83 +113,73 @@ export default function CreateDealPage() {
             </button>
           </div>
         ) : (
-          <div className="card shadow-lg" style={{ padding: '3rem' }}>
+          <div className="card shadow-lg form-card">
             <form onSubmit={handleCreateDeal}>
-              <div className="form-group" style={{ marginBottom: '2rem' }}>
-                <label className="label" style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>Negotiation Subject</label>
+              <div className="form-group mb-2">
+                <label className="label uppercase-label">Negotiation Subject</label>
                 <textarea 
-                  className="input" 
+                  className="input subject-input" 
                   rows={2}
-                  placeholder="e.g., Senior Product Designer Salary or Purchase of &apos;Sunset Over Mars&apos; Art"
-                  style={{ resize: 'none', padding: '1rem', fontSize: '1.1rem' }}
+                  placeholder="e.g., Senior Product Designer Salary or Purchase of 'Sunset Over Mars' Art"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: '2rem' }}>
-                <label className="label" style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>Responder&apos;s Google Email (Party B)</label>
+              <div className="form-group mb-2">
+                <label className="label uppercase-label">Responder's Google Email (Party B)</label>
                 <input 
-                  className="input" 
+                  className="input padded-input" 
                   type="email" 
                   required 
                   placeholder="their-email@gmail.com"
-                  style={{ padding: '1rem', fontSize: '1.1rem' }}
                   value={partyBEmail}
                   onChange={(e) => setPartyBEmail(e.target.value)}
                 />
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                <p className="input-hint">
                   Only this account will be able to access this protocol.
                 </p>
               </div>
 
-              <div className="form-group" style={{ marginBottom: '3rem' }}>
-                <label className="label" style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>Your Ideal Target Price</label>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+              <div className="form-group mb-3">
+                <label className="label uppercase-label">Your Ideal Target Price</label>
+                <div className="currency-input-group">
                   <input 
-                    className="input" 
+                    className="input currency-symbol" 
                     type="text" 
-                    style={{ width: '80px', textAlign: 'center', fontSize: '1.25rem', fontWeight: 'bold' }}
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
                   />
                   <input 
-                    className="input" 
+                    className="input amount-input" 
                     type="number" 
                     required 
                     placeholder="100,000"
-                    style={{ fontSize: '1.25rem', fontWeight: 'bold', padding: '1rem' }}
                     value={midpoint}
                     onChange={(e) => setMidpoint(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2.5rem', marginTop: '2.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
+              <div className="flexibility-section">
+                <div className="flexibility-header">
                   <div>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Negotiation Flexibility</h3>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                      The maximum &quot;distance&quot; you&apos;re willing to move to find common ground.
+                    <h3>Negotiation Flexibility</h3>
+                    <p className="flex-desc">
+                      The maximum "distance" you're willing to move to find common ground.
                     </p>
                   </div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>
+                  <div className="flex-value">
                     {formatPercent(selectedSpread)}
                   </div>
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '2.5rem' }}>
+                <div className="spread-grid">
                   {[0.1, 0.15, 0.2, 0.3].map((s) => (
                     <button
                       key={s}
                       type="button"
-                      className={`btn ${selectedSpread === s ? 'btn-active' : ''}`}
-                      style={{ 
-                        padding: '1rem', 
-                        fontSize: '1rem',
-                        background: selectedSpread === s ? 'var(--accent-color)' : 'rgba(255,255,255,0.03)',
-                        border: selectedSpread === s ? 'none' : '1px solid var(--border-color)'
-                      }}
+                      className={`btn spread-btn ${selectedSpread === s ? 'btn-active active-spread' : ''}`}
                       onClick={() => setSelectedSpread(s)}
                     >
                       {formatPercent(s)}
@@ -192,46 +187,27 @@ export default function CreateDealPage() {
                   ))}
                 </div>
 
-                <div className="preview-box" style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '1rem', padding: '2rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Initial Secure Range</h4>
-                    <span className="badge badge-active" style={{ fontSize: '0.9rem', padding: '0.4rem 0.8rem' }}>
+                <div className="preview-box">
+                  <div className="preview-header">
+                    <h4>Initial Secure Range</h4>
+                    <span className="badge badge-active secure-badge">
                       {formatCurrency(anchor.min, currency)} – {formatCurrency(anchor.max, currency)}
                     </span>
                   </div>
                   
-                  <div style={{ height: '48px', background: 'var(--surface-hover)', borderRadius: '12px', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
-                    <div style={{ 
-                      position: 'absolute', 
-                      left: '25%', 
-                      width: '50%', 
-                      height: '100%', 
-                      background: 'rgba(99, 102, 241, 0.15)',
-                      zIndex: 1,
-                      borderLeft: '2px solid rgba(99, 102, 241, 0.6)',
-                      borderRight: '2px solid rgba(99, 102, 241, 0.6)',
-                    }} />
-                    <div style={{ 
-                      position: 'absolute', 
-                      left: '50%', 
-                      width: '4px', 
-                      height: '100%', 
-                      background: 'var(--text-primary)',
-                      zIndex: 2,
-                      boxShadow: '0 0 10px rgba(255,255,255,0.5)',
-                      transform: 'translateX(-50%)'
-                    }} />
+                  <div className="visualizer-track">
+                    <div className="visualizer-secure-range" />
+                    <div className="visualizer-midpoint-line" />
                   </div>
 
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', textAlign: 'center' }}>
-                    Your numbers are processed internally. The other party only sees your target if an overlap is found. If you&apos;re too far apart, no data is shared.
+                  <p className="privacy-note">
+                    Your numbers are processed internally. The other party only sees your target if an overlap is found. If you're too far apart, no data is shared.
                   </p>
                 </div>
               </div>
 
               <button 
-                className="btn btn-primary btn-lg" 
-                style={{ width: '100%', marginTop: '3rem' }}
+                className="btn btn-primary btn-lg submit-btn" 
                 disabled={creating}
               >
                 {creating ? 'Starting Protocol...' : 'Initialize Private Alignment'}
@@ -240,6 +216,58 @@ export default function CreateDealPage() {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .create-main { max-width: 800px; padding-bottom: 6rem; }
+        .page-header { margin-bottom: 3rem; text-align: center; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .subtitle { color: var(--text-secondary); font-size: 1.1rem; }
+        
+        .auth-required-card { text-align: center; padding: 4rem 2rem; }
+        .auth-required-card h2 { margin-bottom: 1.5rem; }
+        .auth-desc { margin-bottom: 2.5rem; color: var(--text-secondary); max-width: 400px; margin: 0 auto 2.5rem; }
+        
+        .form-card { padding: 3rem; }
+        .mb-2 { margin-bottom: 2rem; }
+        .mb-3 { margin-bottom: 3rem; }
+        
+        .uppercase-label { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8; }
+        .subject-input { resize: none; padding: 1rem; font-size: 1.1rem; }
+        .padded-input { padding: 1rem; font-size: 1.1rem; }
+        .input-hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; }
+        
+        .currency-input-group { display: flex; gap: 1rem; }
+        .currency-symbol { width: 80px; text-align: center; font-size: 1.25rem; font-weight: bold; }
+        .amount-input { font-size: 1.25rem; font-weight: bold; padding: 1rem; }
+        
+        .flexibility-section { border-top: 1px solid var(--border-color); padding-top: 2.5rem; margin-top: 2.5rem; }
+        .flexibility-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
+        .flexibility-header h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .flex-desc { font-size: 0.9rem; color: var(--text-secondary); }
+        .flex-value { font-size: 1.25rem; font-weight: bold; color: var(--accent-color); }
+        
+        .spread-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 2.5rem; }
+        .spread-btn { padding: 1rem; font-size: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); }
+        .active-spread { background: var(--accent-color); border: none; }
+        
+        .preview-box { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 1rem; padding: 2rem; }
+        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .preview-header h4 { font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .secure-badge { font-size: 0.9rem; padding: 0.4rem 0.8rem; }
+        
+        .visualizer-track { height: 48px; background: var(--surface-hover); border-radius: 12px; position: relative; overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+        .visualizer-secure-range { position: absolute; left: 25%; width: 50%; height: 100%; background: rgba(99, 102, 241, 0.15); z-index: 1; border-left: 2px solid rgba(99, 102, 241, 0.6); border-right: 2px solid rgba(99, 102, 241, 0.6); }
+        .visualizer-midpoint-line { position: absolute; left: 50%; width: 4px; height: 100%; background: var(--text-primary); z-index: 2; box-shadow: 0 0 10px rgba(255,255,255,0.5); transform: translateX(-50%); }
+        
+        .privacy-note { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; text-align: center; }
+        
+        .submit-btn { width: 100%; margin-top: 3rem; }
+
+        @media (max-width: 640px) {
+          .spread-grid { grid-template-columns: repeat(2, 1fr); }
+          .flexibility-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        }
+      `}</style>
     </main>
   );
 }

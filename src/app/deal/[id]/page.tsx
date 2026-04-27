@@ -381,51 +381,72 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
   );
 }
 
-function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submitting, anchor, targets }: any) {
+function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submitting, anchor, targets }: {
+  deal: Deal, onSubmit: React.FormEventHandler, midpoint: string, setMidpoint: (v: string) => void, submitting: boolean, anchor: Range, targets: Range
+}) {
   return (
-    <div className="card">
-      <h2 style={{ marginBottom: '1.5rem' }}>Welcome to the Protocol</h2>
-      <p style={{ marginBottom: '1.5rem' }}>
-        You have been invited to a private alignment. This protocol uses a <strong>{formatPercent(deal.flexibility || deal.spread)} maximum flexibility</strong> constraint.
+    <div className="card responder-card">
+      <h2>Welcome to the Protocol</h2>
+      <p className="welcome-desc">
+        You've been invited to align on <strong>{deal.description || 'a new deal'}</strong>.
       </p>
 
-      <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1.25rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-        <h4 style={{ color: 'var(--accent-color)', marginBottom: '0.5rem', fontSize: '1.05rem' }}>Private Analysis</h4>
-        <p style={{ fontSize: '1rem', lineHeight: '1.5' }}>
-          If your ranges overlap, the system will identify a match. If you are too far apart, no information is shared—not even the direction of the gap.
+      <div className="private-analysis">
+        <h4>Private Analysis</h4>
+        <p>
+          Submit your <strong>No Regret Target</strong>. The system will create a flexibility range around it (based on a <strong>{formatPercent(deal.flexibility || deal.spread || 0)} spread</strong>) and privately compare it with the other party's range.
         </p>
       </div>
       
       <div className="form-group">
         <label className="label">Your Mid-Point Target (Ideal Price)</label>
         <form onSubmit={onSubmit}>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <div className="input-row">
              <input className="input" type="number" required placeholder="100,000" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
           </div>
 
-          <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <h4 style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>Secure Range Preview</h4>
-              <span className="badge badge-active" style={{ fontSize: '0.9rem' }}>
+          <div className="preview-container">
+            <div className="preview-header">
+              <h4>Secure Range Preview</h4>
+              <span className="badge badge-active preview-badge">
                 {formatCurrency(anchor.min, deal.currency)} – {formatCurrency(anchor.max, deal.currency)}
               </span>
             </div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+            <p className="preview-desc">
               Your private range centered on your target. Used for the initial match check.
             </p>
             
             <MarketSpreadVisualizer 
-            range={anchor} 
-            targets={targets}
-            currency={deal.currency} 
-          />
+              range={anchor} 
+              targets={targets}
+              currency={deal.currency} 
+            />
           </div>
 
-          <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }} disabled={submitting}>
+          <button className="btn btn-primary submit-btn" disabled={submitting}>
             Submit Secure Bid
           </button>
         </form>
       </div>
+      <style jsx>{`
+        .responder-card { padding: 2.5rem; }
+        .responder-card h2 { margin-bottom: 1.5rem; }
+        .welcome-desc { margin-bottom: 1.5rem; }
+        
+        .private-analysis { background: rgba(99, 102, 241, 0.05); padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 2rem; border: 1px solid rgba(99, 102, 241, 0.2); }
+        .private-analysis h4 { color: var(--accent-color); margin-bottom: 0.5rem; font-size: 1.05rem; }
+        .private-analysis p { font-size: 1rem; line-height: 1.5; }
+        
+        .input-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        
+        .preview-container { margin-top: 2rem; margin-bottom: 2rem; }
+        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .preview-header h4 { font-size: 1rem; color: var(--text-secondary); }
+        .preview-badge { font-size: 0.9rem; }
+        .preview-desc { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
+        
+        .submit-btn { width: 100%; margin-top: 1.5rem; }
+      `}</style>
     </div>
   );
 }

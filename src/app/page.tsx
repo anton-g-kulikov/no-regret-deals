@@ -41,7 +41,7 @@ export default function LandingPage() {
           </div>
 
           <div className="social-proof animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <div className="social-proof-label">Aligment achieved:</div>
+            <div className="social-proof-label">Alignment achieved:</div>
             <div className="social-proof-stats">
               <strong>{stats.fairDeals}</strong> fair deals completed <span className="separator">––</span> <strong>{stats.unfairDealsPrevented}</strong> regrettable deals prevented
             </div>
