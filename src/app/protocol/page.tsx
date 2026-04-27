@@ -20,8 +20,8 @@ export default function ProtocolPage() {
           <h2>1. Definitions</h2>
           <div className="definition-box">
             <p><strong>Parties:</strong> Initiator (A) and Responder (B).</p>
-            <p><strong>Threshold Range:</strong> A range [min, max] representing a party's "No Regret" zone.</p>
-            <p><strong>Flexibility Spread (σ):</strong> A percentage (e.g., 20%) defining the maximum allowed expansion of the range.</p>
+            <p><strong>Threshold Range:</strong> A range [min, max] representing a party&apos;s &quot;No Regret&quot; zone.</p>
+            <p><strong>Flexibility Spread (&sigma;):</strong> A percentage (e.g., 20%) defining the maximum allowed expansion of the range.</p>
             <p><strong>Target Value (T):</strong> The ideal value at the center of the range.</p>
           </div>
         </section>
@@ -68,13 +68,13 @@ export default function ProtocolPage() {
             </p>
             <div className="logic-box">
               <h4>Case: B is below A</h4>
-              <p>Feasible if B's maximum possible range reaches A's minimum possible range.</p>
+              <p>Feasible if B&apos;s maximum possible range reaches A&apos;s minimum possible range.</p>
 
               <h4>Case: B is above A</h4>
-              <p>Feasible if B's minimum possible range reaches A's maximum possible range.</p>
+              <p>Feasible if B&apos;s minimum possible range reaches A&apos;s maximum possible range.</p>
             </div>
             <p>
-              If feasible, the protocol reveals a <strong>Directional Hint</strong> (e.g., "Party B is Above") to both parties.
+              If feasible, the protocol reveals a <strong>Directional Hint</strong> (e.g., &quot;Party B is Above&quot;) to both parties.
               If not feasible, the protocol enters <strong>DEADLOCK</strong> and terminates without revealing any directional data.
             </p>
           </div>
@@ -94,11 +94,11 @@ export default function ProtocolPage() {
               <h4>Anti-Fishing Constraint</h4>
               <p>
                 By locking the flexibility spread (σ) globally for the deal, a Responder cannot use a disproportionately
-                large range to "fish" for the Initiator's budget.
+                large range to &quot;fish&quot; for the Initiator&apos;s budget.
               </p>
             </div>
             <div className="security-item">
-              <h4>Mathematical Neutrality</h4>
+              <h4>Equitable Surplus Extraction</h4>
               <p>
                 The use of overlap midpoints removes the first-mover disadvantage.
                 Neither party can &quot;win&quot; the negotiation through aggressive anchoring; the protocol extracts the shared surplus equally.
