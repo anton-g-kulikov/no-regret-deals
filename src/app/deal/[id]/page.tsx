@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { auth, db, googleProvider, signInWithPopup } from '@/lib/firebase-client';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
@@ -14,11 +14,25 @@ export default function DealPage() {
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Local Form State
-  const [min, setMin] = useState('');
-  const [max, setMax] = useState('');
+  // Local Form State (Responder/Round 2)
+  const [midpoint, setMidpoint] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [r1Range, setR1Range] = useState<Range | null>(null);
+
+  // Derived Values for current submission
+  const { anchor, targets } = useMemo(() => {
+    const m = Number(midpoint);
+    const flex = deal?.flexibility || deal?.spread || 0.2;
+    if (!m || m <= 0) return { anchor: { min: 0, max: 0 }, targets: { min: 0, max: 0 } };
+
+    const tMin = Math.round(m * (1 - flex));
+    const tMax = Math.round(m * (1 + flex));
+
+    return { 
+      anchor: { min: tMin, max: tMax }, 
+      targets: { min: tMin, max: tMax } 
+    };
+  }, [midpoint, deal]);
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (u) => setUser(u));
@@ -58,10 +72,10 @@ export default function DealPage() {
       const res = await fetch(`/api/deals/${id}/bid`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-        body: JSON.stringify({ party, round, range: { min: Number(min), max: Number(max) } }),
+        body: JSON.stringify({ party, round, range: anchor }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
-      setMin(''); setMax('');
+      setMidpoint('');
     } catch (error: any) { alert(error.message); }
     finally { setSubmitting(false); }
   };
@@ -87,7 +101,7 @@ export default function DealPage() {
         <Header deal={deal} userEmail={user.email!} />
 
         {deal.status === 'WAITING_FOR_B1' && (
-          isPartyA ? <InitiatorInstructions deal={deal} /> : <ResponderWelcomeView deal={deal} onSubmit={handleBid} min={min} setMin={setMin} max={max} setMax={setMax} submitting={submitting} />
+          isPartyA ? <InitiatorInstructions deal={deal} /> : <ResponderWelcomeView deal={deal} onSubmit={handleBid} midpoint={midpoint} setMidpoint={setMidpoint} submitting={submitting} anchor={anchor} targets={targets} />
         )}
 
         {(deal.status === 'DECIDING_ON_R2' || deal.status === 'WAITING_FOR_R2_BIDS') && (
@@ -96,10 +110,11 @@ export default function DealPage() {
             party={party} 
             onSubmit={handleBid}
             onReject={handleReject}
-            min={min} setMin={setMin} 
-            max={max} setMax={setMax} 
+            midpoint={midpoint} setMidpoint={setMidpoint}
             submitting={submitting}
             r1Range={r1Range}
+            anchor={anchor}
+            targets={targets}
           />
         )}
 
@@ -112,49 +127,69 @@ export default function DealPage() {
 
 // --- Sub-Components ---
 
-function MarketSpreadVisualizer({ range, spread, currency, hint }: { range: { min: number, max: number }, spread: number, currency: string, hint?: string }) {
+function MarketSpreadVisualizer({ range, targets, currency, hint }: { range: { min: number, max: number }, targets: { min: number, max: number }, currency: string, hint?: string }) {
   if (range.min <= 0 || range.max < range.min) return null;
   
-  const reachMin = calculateSafeReach(range.min, spread, 'min');
-  const reachMax = calculateSafeReach(range.max, spread, 'max');
-  
-  const rawMin = range.min / (1 + spread);
-  const rawMax = range.max * (1 + spread);
+  const rawMin = targets.min * 0.9; // 10% visual padding
+  const rawMax = targets.max * 1.1;
   const totalRange = rawMax - rawMin;
   const leftPadding = ((range.min - rawMin) / totalRange) * 100;
   const width = ((range.max - range.min) / totalRange) * 100;
 
+  const targetLeftPadding = ((targets.min - rawMin) / totalRange) * 100;
+  const targetWidth = ((targets.max - targets.min) / totalRange) * 100;
+
   return (
     <div style={{ margin: '1.5rem 0', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.4, marginBottom: '1rem', padding: '0 4px' }}>
-        <span>{formatCurrency(reachMin, currency)} (Lowest Threshold)</span>
-        <span>{formatCurrency(reachMax, currency)} (Highest Threshold)</span>
+        <span>{formatCurrency(targets.min, currency)} (Lowest Threshold)</span>
+        <span>{formatCurrency(targets.max, currency)} (Highest Threshold)</span>
       </div>
       
       <div style={{ height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
         <div style={{ 
           position: 'absolute', 
-          left: `${leftPadding}%`, 
-          width: `${width}%`, 
+          left: `${targetLeftPadding}%`, 
+          width: `${targetWidth}%`, 
           height: '100%', 
           background: 'var(--accent-color)',
+          zIndex: 1,
+          boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
           fontSize: '0.65rem',
           fontWeight: 'bold',
-          zIndex: 2,
-          boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
         }}>
-          ANCHOR
+          SECURE RANGE
         </div>
+
+        <div style={{ 
+          position: 'absolute', 
+          left: `${leftPadding + (width/2)}%`, 
+          width: '4px', 
+          height: '110%', 
+          top: '-5%',
+          background: 'white',
+          zIndex: 2,
+          boxShadow: '0 0 15px white',
+          transform: 'translateX(-50%)'
+        }} />
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginTop: '0.5rem', padding: '0 4px', opacity: 0.8 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${leftPadding}%`, transform: 'translateX(-50%)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${leftPadding + (width/2)}%`, transform: 'translateX(-50%)' }}>
+          <div style={{ height: '6px', width: '2px', background: 'white', marginBottom: '4px' }} />
+          <span style={{ color: 'white', fontWeight: 'bold' }}>IDEAL TARGET: {formatCurrency(Math.round((range.min + range.max)/2), currency)}</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${targetLeftPadding}%`, transform: 'translateX(-50%)' }}>
           <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
-          <span>{formatCurrency(range.min, currency)}</span>
+          <span>{formatCurrency(targets.min, currency)}</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${targetLeftPadding + targetWidth}%`, transform: 'translateX(-50%)' }}>
+          <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
+          <span>{formatCurrency(targets.max, currency)}</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', left: `${leftPadding + width}%`, transform: 'translateX(-50%)' }}>
           <div style={{ height: '6px', width: '1px', background: 'var(--accent-color)', marginBottom: '4px' }} />
@@ -193,7 +228,7 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
   return (
     <div className="card">
       <h2 style={{ marginBottom: '1.5rem' }}>Deal Created Successfully</h2>
-      <p style={{ marginBottom: '1.5rem' }}>Your initial range and <strong>{formatPercent(deal.spread)} spread</strong> are locked in.</p>
+      <p style={{ marginBottom: '1.5rem' }}>Your initial range and <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong> are locked in.</p>
       
       <div style={{ background: 'var(--surface-hover)', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
         <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem', opacity: 0.7 }}>Share this URL with Party B:</p>
@@ -218,12 +253,12 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
   );
 }
 
-function ResponderWelcomeView({ deal, onSubmit, min, setMin, max, setMax, submitting }: any) {
+function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submitting, anchor, targets }: any) {
   return (
     <div className="card">
       <h2 style={{ marginBottom: '1.5rem' }}>Welcome to the Protocol</h2>
       <p style={{ marginBottom: '1.5rem' }}>
-        You have been invited to a private alignment. This protocol uses a <strong>{formatPercent(deal.spread)} maximum spread</strong> constraint.
+        You have been invited to a private alignment. This protocol uses a <strong>{formatPercent(deal.flexibility || deal.spread)} maximum flexibility</strong> constraint.
       </p>
 
       <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1.25rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
@@ -234,18 +269,29 @@ function ResponderWelcomeView({ deal, onSubmit, min, setMin, max, setMax, submit
       </div>
       
       <div className="form-group">
-        <label className="label">Your Private Range (Round 1)</label>
+        <label className="label">Your Mid-Point Target (Ideal Price)</label>
         <form onSubmit={onSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-            <input className="input" type="number" required placeholder="Min" value={min} onChange={e => setMin(e.target.value)} />
-            <input className="input" type="number" required placeholder="Max" value={max} onChange={e => setMax(e.target.value)} />
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+             <input className="input" type="number" required placeholder="100,000" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
           </div>
-          
-          <MarketSpreadVisualizer 
-            range={{ min: Number(min) || 0, max: Number(max) || 0 }} 
-            spread={deal.spread} 
+
+          <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <h4 style={{ fontSize: '0.875rem', opacity: 0.7 }}>Secure Range Preview</h4>
+              <span className="badge badge-active" style={{ fontSize: '0.75rem' }}>
+                {formatCurrency(anchor.min, deal.currency)} – {formatCurrency(anchor.max, deal.currency)}
+              </span>
+            </div>
+            <p style={{ fontSize: '0.75rem', opacity: 0.5, marginBottom: '1.5rem', lineHeight: '1.4' }}>
+              Your private range centered on your target. Used for the initial match check.
+            </p>
+            
+            <MarketSpreadVisualizer 
+            range={anchor} 
+            targets={targets}
             currency={deal.currency} 
           />
+          </div>
 
           <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }} disabled={submitting}>
             Submit Secure Bid
@@ -256,7 +302,7 @@ function ResponderWelcomeView({ deal, onSubmit, min, setMin, max, setMax, submit
   );
 }
 
-function Round2UnifiedView({ deal, party, onSubmit, onReject, min, setMin, max, setMax, submitting, r1Range }: any) {
+function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpoint, submitting, r1Range, anchor, targets }: any) {
   const hasSubmitted = party === 'A' ? deal.round2SubmittedA : deal.round2SubmittedB;
   const isB = party === 'B';
   const bIsAbove = deal.result?.direction === 'above';
@@ -278,19 +324,42 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, min, setMin, max, 
       <h2 style={{ marginBottom: '1.5rem' }}>Round 1 Result</h2>
       <p style={{ marginBottom: '1.5rem' }}>A match is <strong>feasible</strong> within your shared thresholds. Reveal the direction below:</p>
       
-      {r1Range && <MarketSpreadVisualizer range={r1Range} spread={deal.spread} currency={deal.currency} hint={hint} />}
+      {r1Range && (
+        <MarketSpreadVisualizer 
+          range={r1Range} 
+          targets={{
+            min: Math.round(((r1Range.min + r1Range.max)/2) * (1 - (deal.flexibility || deal.spread))),
+            max: Math.round(((r1Range.min + r1Range.max)/2) * (1 + (deal.flexibility || deal.spread)))
+          }}
+          currency={deal.currency} 
+          hint={hint} 
+        />
+      )}
 
       <div style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
         <h3 style={{ marginBottom: '1rem' }}>Final Round Submission</h3>
         <p style={{ marginBottom: '1.5rem', fontSize: '0.9rem', opacity: 0.7 }}>
-          If you wish to proceed, submit your final range below. Your new range <strong>must overlap</strong> with your anchor ({formatCurrency(r1Range?.min || 0, deal.currency)} - {formatCurrency(r1Range?.max || 0, deal.currency)}).
+          Submit your final target below. Your new matching window <strong>must overlap</strong> with your original window ({formatCurrency(r1Range?.min || 0, deal.currency)} - {formatCurrency(r1Range?.max || 0, deal.currency)}).
         </p>
 
         <form onSubmit={onSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-            <input className="input" type="number" required placeholder="Min" value={min} onChange={e => setMin(e.target.value)} />
-            <input className="input" type="number" required placeholder="Max" value={max} onChange={e => setMax(e.target.value)} />
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+            <input className="input" type="number" required placeholder="Final Target" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
           </div>
+
+          {Number(midpoint) > 0 && (
+            <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+              <h4 style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>Final Commitment Preview</h4>
+              <MarketSpreadVisualizer 
+                range={anchor} 
+                targets={targets}
+                currency={deal.currency} 
+              />
+              <p style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '1rem', textAlign: 'center' }}>
+                Your final matching window using your original <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong>.
+              </p>
+            </div>
+          )}
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <button className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
