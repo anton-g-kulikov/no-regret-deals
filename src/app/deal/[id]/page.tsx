@@ -47,7 +47,6 @@ export default function DealPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      setDealLoading(false);
       return;
     }
 
@@ -80,8 +79,9 @@ export default function DealPage() {
     }
   }, [user, deal, id]);
 
-  if (authLoading || dealLoading) return <div className="container">Loading Protocol...</div>;
+  if (authLoading) return <div className="container">Loading Protocol...</div>;
   if (!user) return <AuthView handleLogin={() => signInWithPopup(auth, googleProvider)} />;
+  if (dealLoading) return <div className="container">Loading Protocol...</div>;
   if (errorMsg === 'Access denied') return <AccessDeniedView email={user.email!} />;
   if (errorMsg) return <div className="container">{errorMsg}</div>;
   if (!deal) return <div className="container">Deal not found.</div>;
