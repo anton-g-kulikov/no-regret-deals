@@ -388,13 +388,13 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
     <div className="card responder-card">
       <h2>Welcome to the Protocol</h2>
       <p className="welcome-desc">
-        You've been invited to align on <strong>{deal.description || 'a new deal'}</strong>.
+        You&apos;ve been invited to align on <strong>{deal.description || 'a new deal'}</strong>.
       </p>
 
       <div className="private-analysis">
         <h4>Private Analysis</h4>
         <p>
-          Submit your <strong>No Regret Target</strong>. The system will create a flexibility range around it (based on a <strong>{formatPercent(deal.flexibility || deal.spread || 0)} spread</strong>) and privately compare it with the other party's range.
+          Submit your <strong>No Regret Target</strong>. The system will create a flexibility range around it (based on a <strong>{formatPercent(deal.flexibility || deal.spread || 0)} spread</strong>) and privately compare it with the other party&apos;s range.
         </p>
       </div>
       

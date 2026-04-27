@@ -127,7 +127,7 @@ export default function CreateDealPage() {
               </div>
 
               <div className="form-group mb-2">
-                <label className="label uppercase-label">Responder's Google Email (Party B)</label>
+                <label className="label uppercase-label">Responder&apos;s Google Email (Party B)</label>
                 <input 
                   className="input padded-input" 
                   type="email" 
@@ -166,7 +166,7 @@ export default function CreateDealPage() {
                   <div>
                     <h3>Negotiation Flexibility</h3>
                     <p className="flex-desc">
-                      The maximum "distance" you're willing to move to find common ground.
+                      The maximum &quot;distance&quot; you&apos;re willing to move to find common ground.
                     </p>
                   </div>
                   <div className="flex-value">
@@ -201,7 +201,7 @@ export default function CreateDealPage() {
                   </div>
 
                   <p className="privacy-note">
-                    Your numbers are processed internally. The other party only sees your target if an overlap is found. If you're too far apart, no data is shared.
+                    Your numbers are processed internally. The other party only sees your target if an overlap is found. If you&apos;re too far apart, no data is shared.
                   </p>
                 </div>
               </div>
