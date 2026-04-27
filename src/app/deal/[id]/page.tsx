@@ -99,6 +99,7 @@ export default function DealPage() {
     <main className="container">
       <div className="animate-fade-in">
         <Header deal={deal} userEmail={user.email!} />
+        <SubjectView description={deal.description} />
 
         {deal.status === 'WAITING_FOR_B1' && (
           isPartyA ? <InitiatorInstructions deal={deal} /> : <ResponderWelcomeView deal={deal} onSubmit={handleBid} midpoint={midpoint} setMidpoint={setMidpoint} submitting={submitting} anchor={anchor} targets={targets} />
@@ -206,18 +207,112 @@ function MarketSpreadVisualizer({ range, targets, currency, hint }: { range: { m
 
 function Header({ deal, userEmail }: { deal: Deal, userEmail: string }) {
   return (
-    <header style={{ marginBottom: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <header className="page-header">
+      <div className="header-top">
         <h1>{deal.status === 'COMPLETED' ? 'Final Alignment' : 'Protocol in Progress'}</h1>
         <span className={`badge badge-${deal.status === 'COMPLETED' ? 'success' : 'active'}`}>
           {deal.status.replace(/_/g, ' ')}
         </span>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-        <p>ID: {deal.id}</p>
-        <p>Signed in as: <strong style={{ color: 'var(--text-primary)' }}>{userEmail}</strong></p>
+      <div className="header-meta">
+        <div className="meta-item">
+          <span className="meta-label">ID:</span>
+          <span className="meta-value">{deal.id}</span>
+        </div>
+        <div className="meta-item text-right">
+          <span className="meta-label">Signed in as:</span>
+          <span className="meta-value user-email">{userEmail}</span>
+        </div>
       </div>
+
+      <style jsx>{`
+        .page-header {
+          margin-bottom: 2.5rem;
+          padding-bottom: 1.5rem;
+          border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1.25rem;
+        }
+
+        .header-top h1 {
+          margin: 0;
+          font-size: 2.25rem;
+          line-height: 1.2;
+        }
+
+        .header-meta {
+          display: flex;
+          justify-content: space-between;
+          gap: 1.5rem;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+        }
+
+        .meta-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          min-width: 0; /* Allow shrinking */
+        }
+
+        .meta-label {
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          opacity: 0.7;
+        }
+
+        .meta-value {
+          color: var(--text-primary);
+          font-weight: 500;
+          word-break: break-all;
+        }
+
+        .user-email {
+          font-weight: 700;
+        }
+
+        .text-right {
+          text-align: right;
+        }
+
+        @media (max-width: 640px) {
+          .header-top {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .header-meta {
+            flex-direction: column;
+            gap: 1rem;
+          }
+
+          .text-right {
+            text-align: left;
+          }
+
+          .header-top h1 {
+            font-size: 1.85rem;
+          }
+        }
+      `}</style>
     </header>
+  );
+}
+
+function SubjectView({ description }: { description?: string }) {
+  if (!description) return null;
+  return (
+    <div className="card" style={{ marginBottom: '2rem', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+      <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Negotiation Subject</h3>
+      <p style={{ fontSize: '1.15rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{description}</p>
+    </div>
   );
 }
 
@@ -260,9 +355,9 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
       </p>
 
       <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1.25rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-        <h4 style={{ color: 'var(--accent-color)', marginBottom: '0.5rem', fontSize: '1.05rem' }}>🛡️ The Privacy Shield</h4>
+        <h4 style={{ color: 'var(--accent-color)', marginBottom: '0.5rem', fontSize: '1.05rem' }}>Private Analysis</h4>
         <p style={{ fontSize: '1rem', lineHeight: '1.5' }}>
-          If a match is feasible, the system will only reveal direction. If you are too far apart, the system reveals <strong>nothing</strong>—not even direction.
+          If your ranges overlap, the system will identify a match. If you are too far apart, no information is shared—not even the direction of the gap.
         </p>
       </div>
       
@@ -319,8 +414,8 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
 
   return (
     <div className="card">
-      <h2 style={{ marginBottom: '1.5rem' }}>Round 1 Result</h2>
-      <p style={{ marginBottom: '1.5rem' }}>A match is <strong>feasible</strong> within your shared thresholds. Reveal the direction below:</p>
+      <h2 style={{ marginBottom: '1.5rem' }}>Common Ground Found</h2>
+      <p style={{ marginBottom: '1.5rem' }}>A match is possible within your shared flexibility. See the direction below:</p>
       
       {r1Range && (
         <MarketSpreadVisualizer 
@@ -354,19 +449,37 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
                 currency={deal.currency} 
               />
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '1rem', textAlign: 'center' }}>
-                Your final matching window using your original <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong>.
+                Your final target will be compared against the other party&apos;s range.
               </p>
             </div>
           )}
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <button className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
+          <div className="r2-actions">
+            <button className="btn btn-primary" disabled={submitting}>
               Submit Final Bid
             </button>
-            <button type="button" className="btn" style={{ background: 'var(--error-color)', width: '100%' }} onClick={onReject} disabled={submitting}>
+            <button type="button" className="btn btn-error" onClick={onReject} disabled={submitting}>
               End Protocol
             </button>
           </div>
+
+          <style jsx>{`
+            .r2-actions {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 1rem;
+              margin-top: 1.5rem;
+            }
+            .btn-error {
+              background: var(--error-color);
+              color: white;
+            }
+            @media (max-width: 640px) {
+              .r2-actions {
+                grid-template-columns: 1fr;
+              }
+            }
+          `}</style>
         </form>
       </div>
     </div>
