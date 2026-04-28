@@ -168,8 +168,8 @@ export default function LandingPage() {
           <div className="comparison-card">
             <h4>Scenario A: Perfect Overlap</h4>
             <div className="scenario-description">
-              Party A: 100–120k<br />
-              Party B: 110–130k<br />
+              Party A: <span className="hover-reveal" title="100–120k"><span className="hidden-text">***-***k</span><span className="actual">100–120k</span></span><br />
+              Party B: <span className="hover-reveal" title="110–130k"><span className="hidden-text">***-***k</span><span className="actual">110–130k</span></span><br />
               <strong>Spread: 20%</strong>
             </div>
             <div className="visual-bar-wrapper">
@@ -179,14 +179,14 @@ export default function LandingPage() {
                 <div className="match-point" style={{ left: '45%' }}></div>
               </div>
             </div>
-            <p className="result-text success">Result: Deal at 115k (Midpoint of 110-120k overlap)</p>
+            <p className="result-text success">Result: Deal at 115k (but original ranges are never disclosed)</p>
           </div>
 
           <div className="comparison-card">
             <h4>Scenario B: Close but No Overlap</h4>
             <div className="scenario-description">
-              Party A: 100–110k<br />
-              Party B: 115–125k<br />
+              Party A: <span className="hover-reveal" title="100–110k"><span className="hidden-text">***-***k</span><span className="actual">100–110k</span></span><br />
+              Party B: <span className="hover-reveal" title="115–125k"><span className="hidden-text">***-***k</span><span className="actual">115–125k</span></span><br />
               <strong>Spread: 10%</strong>
             </div>
             <div className="visual-bar-wrapper">
@@ -202,8 +202,8 @@ export default function LandingPage() {
           <div className="comparison-card">
             <h4>Scenario C: Wide Gap</h4>
             <div className="scenario-description">
-              Party A: 100–110k<br />
-              Party B: 150–170k<br />
+              Party A: <span className="hover-reveal" title="100–110k"><span className="hidden-text">***-***k</span><span className="actual">100–110k</span></span><br />
+              Party B: <span className="hover-reveal" title="150–170k"><span className="hidden-text">***-***k</span><span className="actual">150–170k</span></span><br />
               <strong>Spread: 20%</strong>
             </div>
             <div className="visual-bar-wrapper">
@@ -591,6 +591,24 @@ export default function LandingPage() {
           margin-bottom: 1.5rem;
           font-family: monospace;
           line-height: 1.6;
+        }
+
+        .hover-reveal {
+          cursor: help;
+          border-bottom: 1px dotted var(--text-secondary);
+          position: relative;
+        }
+        
+        .hover-reveal .actual {
+          display: none;
+        }
+        
+        .hover-reveal:hover .hidden-text {
+          display: none;
+        }
+        
+        .hover-reveal:hover .actual {
+          display: inline;
         }
 
         .visual-bar-wrapper {
