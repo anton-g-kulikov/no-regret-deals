@@ -43,8 +43,9 @@ export default function CreateDealPage() {
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Login failed:', error);
+      alert(error.message || 'Login failed. Please check the console for details.');
     }
   };
 

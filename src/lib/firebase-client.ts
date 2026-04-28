@@ -12,6 +12,10 @@ const firebaseConfig = {
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+if (typeof window !== 'undefined' && firebaseConfig.apiKey === 'dummy_api_key_for_build') {
+  console.error("🔥 CRITICAL: Firebase API Key is missing! The app is using a dummy key.");
+}
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
@@ -32,4 +36,14 @@ if (typeof window !== 'undefined') {
 }
 
 export const signOut = () => firebaseSignOut(auth);
-export { app, auth, db, googleProvider, signInWithPopup };
+
+const wrappedSignInWithPopup = async (authObj: any, provider: any) => {
+  if (firebaseConfig.apiKey === 'dummy_api_key_for_build') {
+    const msg = "Firebase API Key is missing in this environment. Ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in your production host (e.g., Vercel) before building.";
+    alert(msg);
+    throw new Error(msg);
+  }
+  return signInWithPopup(authObj, provider);
+};
+
+export { app, auth, db, googleProvider, wrappedSignInWithPopup as signInWithPopup };

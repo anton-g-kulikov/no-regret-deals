@@ -79,8 +79,17 @@ export default function DealPage() {
     }
   }, [user, deal, id]);
 
+  const handleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      alert(error.message || 'Login failed. Please check the console for details.');
+    }
+  };
+
   if (authLoading) return <div className="container">Loading Protocol...</div>;
-  if (!user) return <AuthView handleLogin={() => signInWithPopup(auth, googleProvider)} />;
+  if (!user) return <AuthView handleLogin={handleLogin} />;
   if (dealLoading) return <div className="container">Loading Protocol...</div>;
   if (errorMsg === 'Access denied') return <AccessDeniedView email={user.email!} />;
   if (errorMsg) return <div className="container">{errorMsg}</div>;
