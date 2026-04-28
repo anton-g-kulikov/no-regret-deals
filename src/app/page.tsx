@@ -9,28 +9,28 @@ const rolesData = {
     label: 'Recruiter',
     title: "I'm a Recruiter",
     desc: "You have a strict budget but want to offer a fair salary to a great candidate without insulting them.",
-    example: "Instead of asking 'What are your salary expectations?', you set your approved budget range. The candidate enters their acceptable range. If it overlaps, you proceed to the offer instantly. If they want $150k and your cap is $110k, the system ends it politely without either side losing face."
+    example: "Instead of asking 'What are your salary expectations?', you set your approved budget range. The candidate enters their acceptable range. If it overlaps, you're aligned instantly. If they want $150k and your cap is $110k, the system ends it politely without either side losing face."
   },
   candidate: {
     id: 'candidate',
     label: 'Candidate',
     title: "I'm a Candidate",
     desc: "You don't want to lowball yourself, but you also don't want to lose the offer by asking for too much.",
-    example: "Enter the true salary range you'd be happy to accept. The company enters their budget. If your number is within their budget, you get the job at a fair midpoint. If not, your specific number is never revealed, protecting your negotiating power for the future."
+    example: "Enter the true salary range you'd be happy to accept. The company enters their budget. If your number is within their budget, you've calibrated successfully. If not, your specific number is never revealed, protecting your position for the future."
   },
   freelancer: {
     id: 'freelancer',
     label: 'Freelancer',
     title: "I'm a Freelancer",
     desc: "Pricing a project is tricky. You need to be paid what you're worth without scaring away a good client.",
-    example: "Send a No Regret Deal link to your client. You set your project rate (e.g., $5k-$6k). The client enters what they're willing to pay. If they enter $5.5k, you've got a deal. If they only have $2k, the deal is rejected silently, saving you both hours of awkward emails."
+    example: "Send a Private Calibration link to your client. You set your project rate (e.g., $5k-$6k). The client enters what they're willing to pay. If they enter $5.5k, you've reached alignment. If they only have $2k, the process concludes silently, saving you both hours of awkward emails."
   },
   artist: {
     id: 'artist',
     label: 'Artist',
     title: "I'm an Artist",
     desc: "Selling commissions or artwork often involves uncomfortable haggling over your creative value.",
-    example: "You set your absolute minimum and ideal price for a piece. The buyer securely submits their budget. If there's an overlap, the piece is sold at a fair price. You avoid the pressure of having to justify your rates to bargain hunters."
+    example: "You set your absolute minimum and ideal price for a piece. The buyer securely submits their budget. If there's an overlap, you've calibrated your expectations. You avoid the pressure of having to justify your rates to bargain hunters."
   },
   contractor: {
     id: 'contractor',
@@ -44,7 +44,7 @@ const rolesData = {
     label: 'Investor',
     title: "I'm an Investor",
     desc: "Negotiating a startup valuation is exhausting and can sour the relationship before it even starts.",
-    example: "Both you and the founder submit your acceptable valuation ranges. If there's an overlap, you instantly have a baseline for your term sheet. If you're too far apart, you both save weeks of painful due diligence."
+    example: "Both you and the founder submit your acceptable valuation ranges. If there's an overlap, you instantly have a baseline for your calibration. If you're too far apart, you both save weeks of painful due diligence."
   }
 };
 
@@ -74,12 +74,12 @@ export default function LandingPage() {
           </div>
           <h1>Find Common Ground <br /> <span className="text-gradient">Without Revealing Your Hand</span></h1>
           <p className="hero-subtitle">
-            No Regret Deals uses the <Link href="/protocol">Private Alignment Protocol</Link>{' '}to match parties on price, salary, or value.
-            Strike a deal instantly if you overlap, or walk away with your privacy intact if you don&apos;t.
+            No Regret Deals uses the <Link href="/protocol">Private Calibration Protocol</Link>{' '}to check alignment on price, salary, or value.
+            Reach common ground instantly if you overlap, or walk away with your privacy intact if you don&apos;t.
           </p>
           <div className="hero-actions">
             <Link href="/create" className="btn btn-primary btn-lg">
-              Start a Negotiation
+              Start Calibration
             </Link>
             <a href="#how-it-works" className="btn btn-secondary">
               How it Works
@@ -89,7 +89,7 @@ export default function LandingPage() {
           <div className="social-proof animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <div className="social-proof-label">Alignment achieved:</div>
             <div className="social-proof-stats">
-              <strong>{stats.fairDeals}</strong> fair deals completed <span className="separator">––</span> <strong>{stats.unfairDealsPrevented}</strong> regrettable deals prevented
+              <strong>{stats.fairDeals}</strong> alignments reached <span className="separator">––</span> <strong>{stats.unfairDealsPrevented}</strong> misalignments avoided
             </div>
           </div>
         </div>
@@ -138,9 +138,9 @@ export default function LandingPage() {
                   <h3>The Initiator Strategy</h3>
                   <p>As Party A, you set the stage. Define the range you are comfortable with and invite the other party.</p>
                   <ul className="feature-list">
-                    <li><strong>Define the Shared Reality:</strong> Set your ideal target value and a maximum <strong>Negotiation Spread (e.g., 20%)</strong>. Your resulting &quot;No Regret&quot; range is generated from this.</li>
-                    <li><strong>The Spread is the Limit:</strong> The negotiation spread you choose dictates the maximum allowed width for Party B&apos;s range, preventing them from submitting artificially wide nets.</li>
-                    <li><strong>Protect Your Position:</strong> If their range is outside your range + the % spread, the deal ends silently in a Deadlock. They never know what your numbers were.</li>
+                    <li><strong>Define the Shared Reality:</strong> Set your target value and a <strong>Calibration Flexibility (e.g., 20%)</strong>. Your resulting secure range is generated from this.</li>
+                    <li><strong>The Flexibility is the Limit:</strong> The flexibility you choose dictates the maximum allowed width for Party B&apos;s range, ensuring a focused calibration.</li>
+                    <li><strong>Protect Your Position:</strong> If their range is outside your range + the % flexibility, the process concludes silently. They never know what your numbers were.</li>
                   </ul>
                 </div>
                 <div className="outcome-box">
@@ -148,7 +148,7 @@ export default function LandingPage() {
                   <div className="outcome-item">
                     <span className="dot success"></span>
                     <div>
-                      <strong>Match:</strong> Your ranges overlapped. A deal is struck at the midpoint, ensuring a fair outcome for both sides.
+                      <strong>Aligned:</strong> Your ranges overlapped. Expectations are calibrated, ensuring a fair baseline for both sides.
                     </div>
                   </div>
                   <div className="outcome-item">
@@ -160,7 +160,7 @@ export default function LandingPage() {
                   <div className="outcome-item">
                     <span className="dot error"></span>
                     <div>
-                      <strong>Deadlock:</strong> You are too far apart. The process ends. No ranges are revealed. No pride is lost.
+                      <strong>Too Far Apart:</strong> You are not currently aligned. The process concludes. No ranges are revealed. No pride is lost.
                     </div>
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export default function LandingPage() {
                   <ul className="feature-list">
                     <li><strong>Constrained by the Spread:</strong> You must submit a range within the Initiator&apos;s chosen <strong>Negotiation Spread (e.g., 20%)</strong> to keep the negotiation fair.</li>
                     <li><strong>Internal Comparison:</strong> Your numbers are compared privately on the server. If you don&apos;t overlap, your specific target is never disclosed.</li>
-                    <li><strong>Fair Midpoints:</strong> If you overlap, the deal happens at the exact midpoint of the shared range, ensuring both parties get a &quot;better than expected&quot; outcome.</li>
+                    <li><strong>Fair Baselines:</strong> If you overlap, you reach successful calibration at the exact midpoint of the shared range, ensuring both parties start from a place of mutual agreement.</li>
                   </ul>
                 </div>
                 <div className="outcome-box">
@@ -181,7 +181,7 @@ export default function LandingPage() {
                   <div className="outcome-item">
                     <span className="dot success"></span>
                     <div>
-                      <strong>Instant Deal:</strong> Your range hit their range. You get a fair deal without the &quot;negotiation dance.&quot;
+                      <strong>Successful Calibration:</strong> Your range hit their range. You've reached alignment without the &quot;negotiation dance.&quot;
                     </div>
                   </div>
                   <div className="outcome-item">
@@ -193,7 +193,7 @@ export default function LandingPage() {
                   <div className="outcome-item">
                     <span className="dot error"></span>
                     <div>
-                      <strong>Private Walkaway:</strong> If the gap is too wide, the deal simply stops. No awkward emails or revealed numbers.
+                      <strong>Private Walkaway:</strong> If the gap is too wide, the process simply stops. No awkward emails or revealed numbers.
                     </div>
                   </div>
                 </div>
@@ -238,8 +238,8 @@ export default function LandingPage() {
       {/* Comparison Section */}
       <section className="visual-comparison">
         <div className="section-header">
-          <h2>The Math of Alignment</h2>
-          <p>See exactly when a deal is struck, when you get a second chance, and when you safely walk away.</p>
+          <h2>The Signal of Alignment</h2>
+          <p>See exactly when you are aligned, when you get a second chance, and when you are too far away.</p>
         </div>
 
         <div className="comparison-grid">
@@ -248,7 +248,7 @@ export default function LandingPage() {
             <div className="scenario-description">
               Party A: <span className="hover-reveal" title="100–120k"><span className="hidden-text">***-***k</span><span className="actual">100–120k</span></span><br />
               Party B: <span className="hover-reveal" title="110–130k"><span className="hidden-text">***-***k</span><span className="actual">110–130k</span></span><br />
-              <strong>Spread: 20%</strong>
+              <strong>Flexibility: 20%</strong>
             </div>
             <div className="visual-bar-wrapper">
               <div className="visual-bar-bg">
@@ -257,7 +257,7 @@ export default function LandingPage() {
                 <div className="match-point" style={{ left: '45%' }}></div>
               </div>
             </div>
-            <p className="result-text success">Result: Deal at 115k (but original ranges are never disclosed)</p>
+            <p className="result-text success">Result: Aligned at 115k (but original ranges are never disclosed)</p>
           </div>
 
           <div className="comparison-card">
@@ -265,7 +265,7 @@ export default function LandingPage() {
             <div className="scenario-description">
               Party A: <span className="hover-reveal" title="100–110k"><span className="hidden-text">***-***k</span><span className="actual">100–110k</span></span><br />
               Party B: <span className="hover-reveal" title="115–125k"><span className="hidden-text">***-***k</span><span className="actual">115–125k</span></span><br />
-              <strong>Spread: 10%</strong>
+              <strong>Flexibility: 10%</strong>
             </div>
             <div className="visual-bar-wrapper">
               <div className="visual-bar-bg">
@@ -274,7 +274,7 @@ export default function LandingPage() {
                 <div className="gap-indicator" style={{ left: '40%', width: '10%' }}></div>
               </div>
             </div>
-            <p className="result-text warning">Result: &quot;Feasible&quot;. Gap is within the 10% spread limit (110k * 1.1 = 121k ≥ 115k). Direction is revealed, and parties decide whether to adjust their positions.</p>
+            <p className="result-text warning">Result: &quot;Feasible&quot;. Gap is within the 10% flexibility limit (110k * 1.1 = 121k ≥ 115k). Direction is revealed, and parties decide whether to adjust their positions.</p>
           </div>
 
           <div className="comparison-card">
@@ -282,7 +282,7 @@ export default function LandingPage() {
             <div className="scenario-description">
               Party A: <span className="hover-reveal" title="100–110k"><span className="hidden-text">***-***k</span><span className="actual">100–110k</span></span><br />
               Party B: <span className="hover-reveal" title="150–170k"><span className="hidden-text">***-***k</span><span className="actual">150–170k</span></span><br />
-              <strong>Spread: 20%</strong>
+              <strong>Flexibility: 20%</strong>
             </div>
             <div className="visual-bar-wrapper">
               <div className="visual-bar-bg">
@@ -290,7 +290,7 @@ export default function LandingPage() {
                 <div className="bar-range b" style={{ left: '70%', width: '20%' }}>Party B</div>
               </div>
             </div>
-            <p className="result-text error">Result: Deadlock. Gap exceeds the 20% negotiation spread limit. No data revealed.</p>
+            <p className="result-text error">Result: Too far apart. Gap exceeds the 20% calibration flexibility. No data revealed.</p>
           </div>
         </div>
       </section>
@@ -301,7 +301,7 @@ export default function LandingPage() {
           <h2>Ready to find common ground?</h2>
           <p>Stop guessing. Start aligning.</p>
           <Link href="/create" className="btn btn-primary btn-lg">
-            Start negotiations
+            Start Calibration
           </Link>
         </div>
       </section>
@@ -318,7 +318,7 @@ function ProtocolVisualizer({ role }: { role: 'A' | 'B' }) {
         <div className="viz-number">1</div>
         <div className="viz-info">
           <strong>Private Threshold</strong>
-          <p>Define your ideal target and set your negotiation spread.</p>
+          <p>Define your target and set your calibration flexibility.</p>
         </div>
       </div>
       <div className="viz-step">
