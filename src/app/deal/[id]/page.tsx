@@ -471,6 +471,13 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
 function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpoint, submitting, r1Range, anchor, targets }: {
   deal: Deal, party: Party, onSubmit: React.FormEventHandler, onReject: () => void, midpoint: string, setMidpoint: (val: string) => void, submitting: boolean, r1Range: Range | null, anchor: Range, targets: Range
 }) {
+  const isValidOverlap = useMemo(() => {
+    if (!r1Range || !anchor.min || !anchor.max) return true;
+    const overlapMin = Math.max(r1Range.min, anchor.min);
+    const overlapMax = Math.min(r1Range.max, anchor.max);
+    return overlapMin <= overlapMax;
+  }, [r1Range, anchor]);
+
   const hasSubmitted = party === 'A' ? deal.round2SubmittedA : deal.round2SubmittedB;
   const isB = party === 'B';
   const bIsAbove = deal.result?.direction === 'above';
@@ -520,6 +527,12 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
             <input className="input" type="number" required placeholder="Final Target" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
           </div>
 
+          {Number(midpoint) > 0 && !isValidOverlap && (
+            <div className="overlap-error">
+              Your new range does not overlap with your original window. You must move closer to your previous position.
+            </div>
+          )}
+
           {Number(midpoint) > 0 && (
             <div className="preview-box">
               <h4>Final Commitment Preview</h4>
@@ -553,6 +566,15 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
             .preview-box { margin-top: 2rem; margin-bottom: 2rem; }
             .preview-box h4 { font-size: 1rem; color: var(--text-secondary); margin-bottom: 1rem; }
             .preview-desc { font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem; text-align: center; }
+            .overlap-error {
+              background: rgba(239, 68, 68, 0.1);
+              color: var(--error-color);
+              padding: 1rem;
+              border-radius: 0.5rem;
+              margin-bottom: 1.5rem;
+              font-weight: 600;
+              border: 1px solid rgba(239, 68, 68, 0.2);
+            }
             .r2-actions {
               display: grid;
               grid-template-columns: 1fr 1fr;
