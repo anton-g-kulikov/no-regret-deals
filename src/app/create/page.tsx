@@ -22,8 +22,8 @@ export default function CreateDealPage() {
     const m = Number(midpoint);
     if (!m || m <= 0) return { anchor: { min: 0, max: 0 }, targets: { min: 0, max: 0 }, spread: selectedSpread };
 
-    const tMin = Math.round(m * (1 - selectedSpread));
-    const tMax = Math.round(m * (1 + selectedSpread));
+    const tMin = Math.round(m * (1 - selectedSpread / 2));
+    const tMax = Math.round(m * (1 + selectedSpread / 2));
     const protocolSpread = (tMax / tMin) - 1;
 
     return {
