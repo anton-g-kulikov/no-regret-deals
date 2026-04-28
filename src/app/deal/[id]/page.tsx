@@ -101,7 +101,7 @@ export default function DealPage() {
 
   if (!isPartyA && !isPartyB) return <AccessDeniedView email={user.email!} />;
 
-  const handleBid = async (e: React.FormEvent) => {
+  const handleSubmission = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
@@ -122,7 +122,7 @@ export default function DealPage() {
   };
 
   const handleReject = async () => {
-    if (!confirm('Are you sure you want to end this protocol? No further bids will be possible.')) return;
+    if (!confirm('Are you sure you want to end this protocol? No further movement will be possible.')) return;
     setSubmitting(true);
     try {
       const idToken = await user.getIdToken();
@@ -146,16 +146,17 @@ export default function DealPage() {
         <SubjectView description={deal.description} />
 
         {deal.status === 'WAITING_FOR_B1' && (
-          isPartyA ? <InitiatorInstructions deal={deal} /> : <ResponderWelcomeView deal={deal} onSubmit={handleBid} midpoint={midpoint} setMidpoint={setMidpoint} submitting={submitting} anchor={anchor} targets={targets} />
+          isPartyA ? <InitiatorInstructions deal={deal} /> : <ResponderWelcomeView deal={deal} onSubmit={handleSubmission} midpoint={midpoint} setMidpoint={setMidpoint} submitting={submitting} anchor={anchor} targets={targets} />
         )}
 
         {(deal.status === 'DECIDING_ON_R2' || deal.status === 'WAITING_FOR_R2_BIDS') && (
           <Round2UnifiedView 
             deal={deal} 
             party={party} 
-            onSubmit={handleBid}
-            onReject={handleReject}
-            midpoint={midpoint} setMidpoint={setMidpoint}
+            onSubmit={handleSubmission} 
+            onReject={handleReject} 
+            midpoint={midpoint} 
+            setMidpoint={setMidpoint} 
             submitting={submitting}
             r1Range={r1Range}
             anchor={anchor}
@@ -478,7 +479,7 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
   if (hasSubmitted) {
     return (
       <div className="card submitted-card">
-        <h2>Bid Submitted</h2>
+        <h2>Position Submitted</h2>
         <div className="waiting-pulse">
           <p className="animate-pulse">Waiting for your counterpart to decide or submit their final range...</p>
         </div>
@@ -534,8 +535,8 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
           )}
           
           <div className="r2-actions">
-            <button className="btn btn-primary" disabled={submitting}>
-              Submit Your Target Range
+            <button className="btn btn-primary" disabled={submitting || !isValidOverlap}>
+              Submit Your Final Position
             </button>
             <button type="button" className="btn btn-error" onClick={onReject} disabled={submitting}>
               End Protocol
