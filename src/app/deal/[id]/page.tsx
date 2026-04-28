@@ -222,7 +222,7 @@ function MarketSpreadVisualizer({ range, targets, currency, hint }: { range: { m
         .visualizer-target-label { display: flex; flex-direction: column; align-items: center; position: absolute; transform: translateX(-50%); z-index: 3; }
         .visualizer-target-tick { height: 12px; width: 2px; background: var(--text-primary); margin-bottom: 8px; }
         
-        .target-pill { background: var(--text-primary); color: var(--background-color); padding: 0.4rem 0.8rem; border-radius: 99px; display: flex; flex-direction: column; align-items: center; line-height: 1.1; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .target-pill { background: var(--text-primary); color: var(--bg-color); padding: 0.4rem 0.8rem; border-radius: 99px; display: flex; flex-direction: column; align-items: center; line-height: 1.1; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .target-label { font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; opacity: 0.8; }
         .target-value { font-size: 1rem; font-weight: 900; }
 
