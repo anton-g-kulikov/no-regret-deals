@@ -306,7 +306,7 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
       </div>
       
       <div className="form-group">
-        <label className="label">Your Mid-Point Target (Ideal Price)</label>
+        <label className="label">Your Ideal Target Value</label>
         <form onSubmit={onSubmit}>
           <div className="input-row">
              <input className="input" type="number" required placeholder="100,000" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
