@@ -1,98 +1,63 @@
 # No Regret Deals 🤝
 
-**No Regret Deals** is a privacy-preserving negotiation platform and bounded alignment protocol designed to help two parties reach an agreement on high-value subjects without revealing their true "walk-away" targets prematurely.
+> **Private Alignment: A Mechanism for Regret-Free Negotiations**
 
-## The Protocol
+Negotiations are often performative dances of information asymmetry. Whether it’s a salary discussion, a freelance quote, or a startup valuation, both parties usually start by hiding their true "no regret" numbers. We fear that revealing our hand too early leads to anchoring, lowballing, or losing leverage.
 
-When negotiating a salary, acquiring art, or closing an M&A deal, revealing your target price first can leave money on the table (the "Winner's Curse"). The **Private Bounded Alignment Protocol (PBAP)** solves this by acting as a trusted, zero-knowledge intermediary.
+The result? Inefficient markets, social friction, and the "Winner's Curse"—where even the party that "wins" the negotiation feels like they might have left money on the table or soured the relationship.
 
-1. **Party A (Initiator)** creates a deal securely, setting a Negotiation Subject, their counterpart's email, their Ideal Target, and their maximum Negotiation Spread (e.g., 15%).
-2. **Party B (Responder)** is securely invited and submits their own No Regret Target.
-3. The protocol automatically generates and privately compares ranges based on the chosen flexibility constraint.
-4. **Outcome**:
-   - If the ranges overlap, the deal is **Matched**, and the exact midpoint of the overlap is revealed to both parties.
-   - If the ranges do not overlap, **no data is shared**, and the negotiation safely concludes without either party losing leverage.
+[No Regret Deals](https://noregretdeals.com) attempts to solve this using a mechanism called the **Private (Bounded) Alignment Protocol (PBAP)**.
 
-## Tech Stack
+## The Problem: The Haggling Trap
 
-This project is built with modern, secure, and highly scalable technologies:
+In a standard negotiation:
+1.  **Anchoring:** Whoever speaks first sets a psychological anchor that biases the entire conversation.
+2.  **Strategic Misrepresentation:** Parties often signal values far from their actual thresholds to create "bargaining room."
+3.  **Negative Signaling:** If a candidate asks for $150k and the budget is $110k, the gap might be so wide that the company just walks away, even if both might have been flexible.
 
-- **Framework**: [Next.js](https://nextjs.org/) (App Router)
-- **Database**: [Firebase Firestore](https://firebase.google.com/docs/firestore)
-- **Authentication**: [Firebase Auth](https://firebase.google.com/docs/auth) (Google OAuth strictly enforced)
-- **Deployment**: [Firebase App Hosting](https://firebase.google.com/docs/app-hosting)
-- **Styling**: `styled-jsx` & CSS Modules
+## The Mechanism: Private (Bounded) Alignment
 
-## Architecture & Security
+PBAP is a multi-stage protocol designed to identify value alignment without premature disclosure. Here is how it works:
 
-Security and concurrency are paramount in this protocol. 
+### 1. The Commitment Phase
+The Initiator (Party A) defines a **Target Value** and a **Flexibility Spread (σ)** (e.g., 20%). 
+The system generates a "No Regret" range: `[Target - σ, Target + σ]`. 
 
-- **Role-Based Access Control (RBAC)**: All Firestore mutations are handled server-side via Next.js API Routes using the Firebase Admin SDK. Client-side writes are strictly denied via `firestore.rules`.
-- **Atomic Transactions**: Deal evaluations (especially concurrent submissions in Round 2) are guaranteed atomic via Firestore `db.runTransaction()`, completely eliminating race conditions.
-- **Identity Lock**: Deals are explicitly locked to specific Google accounts. Even if the URL is leaked, uninvited parties cannot interact with the protocol.
+### 2. The Fair Response
+The Responder (Party B) provides their own Target Value. Crucially, the system uses the **same flexibility σ** to generate Party B's range. This "Anti-Fishing" constraint ensures that Party B cannot use a disproportionately large range to "trap" Party A's target.
 
-## Getting Started
+### 3. The Overlap Check (Round 1)
+The server privately compares the two ranges.
+*   **If they overlap:** A deal is struck instantly.
+*   **The Price:** The final value is the **midpoint of the overlapping section**.
 
-### Prerequisites
+### 4. Bounded Feasibility (Round 2)
+If there is no overlap, the protocol checks if a deal is *feasible*—meaning, would they overlap if both parties used their maximum allowed flexibility?
+*   **If Feasible:** The system reveals a **Directional Hint** (e.g., "Party B is higher than your range"). Parties can then choose to adjust their positions for a second round.
+*   **If Not Feasible:** The protocol enters **DEADLOCK**. The negotiation ends, and *no directional data or ranges are ever revealed*.
 
-You will need Node.js (v18+ recommended) and the Firebase CLI installed.
+## Why this is Rational
 
-```bash
-npm install -g firebase-tools
-```
+### Equitable Surplus Extraction
+By using the midpoint of the overlap, the protocol extracts the shared surplus equally. Neither party "wins" by being more aggressive. If I’m willing to pay $100-$120 and you’re willing to accept $110-$130, the overlap is $110-$120. The deal happens at $115. We both got a price better than our "walk-away" threshold.
 
-### Local Development Setup
+### Incentive Compatibility
+In PBAP, there is a strong incentive to be honest about your range. If you "pad" your numbers to try and get a better deal, you increase the risk of a **DEADLOCK**, where you get no deal and no information. The protocol rewards honesty with instant, fair alignment.
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+### Privacy and Social Cohesion
+By automating the "no" in cases of extreme mismatch (Deadlock), we remove the social awkwardness of rejecting someone's "insulting" offer. If it doesn't work, it just doesn't work—the protocol handles the rejection silently.
 
-2. **Environment Variables**
-   Copy the `.env.example` to `.env` and fill in your Firebase config values.
+## Use Cases
 
-3. **Start the Firebase Emulators**
-   The project is configured to use local emulators for Auth and Firestore during development.
-   ```bash
-   npx firebase emulators:start
-   ```
+We've been looking at a few high-friction areas:
+*   **Recruitment:** "What's your salary expectation?" vs "What's your budget?"
+*   **Freelancing:** Quoting for a project without knowing the client's internal cap.
+*   **Art/Commissions:** Artists setting a floor without scaring away fans.
+*   **Investment:** Founders and VCs aligning on valuation ranges.
 
-4. **Run the Next.js Development Server**
-   In a separate terminal:
-   ```bash
-   npm run dev
-   ```
+---
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Deployment
-
-This application is designed to be deployed using **Firebase App Hosting**, which natively supports Next.js applications, server-side rendering, and API routes.
-
-1. **Deploying the Application**
-   Deploy the web app using the Firebase CLI:
-   ```bash
-   npx firebase apphosting:backends:create
-   ```
-   Or, if the backend is already set up, simply push your code to your GitHub repository to trigger an automatic App Hosting rollout.
-
-2. **Deploying Security Rules**
-   Any changes made to the database access policies must be deployed manually:
-   ```bash
-   npx firebase deploy --only firestore:rules
-   ```
-
-## Testing
-
-The project includes a suite of tests ensuring the mathematical logic of the alignment engine is flawless.
-
-```bash
-npm run test
-```
-
-## Contributing
-
-When contributing to this project, please adhere to the strict `styled-jsx` rules for components, and ensure all new backend logic relies exclusively on server-side Next.js route handlers rather than client-side Firestore mutations.
+For technical details, local development setup, and deployment instructions, please see [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## License
 
