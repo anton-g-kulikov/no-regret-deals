@@ -3,8 +3,54 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+const rolesData = {
+  recruiter: {
+    id: 'recruiter',
+    label: 'Recruiter',
+    title: "I'm a Recruiter",
+    desc: "You have a strict budget but want to offer a fair salary to a great candidate without insulting them.",
+    example: "Instead of asking 'What are your salary expectations?', you set your approved budget range. The candidate enters their acceptable range. If it overlaps, you proceed to the offer instantly. If they want $150k and your cap is $110k, the system ends it politely without either side losing face."
+  },
+  candidate: {
+    id: 'candidate',
+    label: 'Candidate',
+    title: "I'm a Candidate",
+    desc: "You don't want to lowball yourself, but you also don't want to lose the offer by asking for too much.",
+    example: "Enter the true salary range you'd be happy to accept. The company enters their budget. If your number is within their budget, you get the job at a fair midpoint. If not, your specific number is never revealed, protecting your negotiating power for the future."
+  },
+  freelancer: {
+    id: 'freelancer',
+    label: 'Freelancer',
+    title: "I'm a Freelancer",
+    desc: "Pricing a project is tricky. You need to be paid what you're worth without scaring away a good client.",
+    example: "Send a No Regret Deal link to your client. You set your project rate (e.g., $5k-$6k). The client enters what they're willing to pay. If they enter $5.5k, you've got a deal. If they only have $2k, the deal is rejected silently, saving you both hours of awkward emails."
+  },
+  artist: {
+    id: 'artist',
+    label: 'Artist',
+    title: "I'm an Artist",
+    desc: "Selling commissions or artwork often involves uncomfortable haggling over your creative value.",
+    example: "You set your absolute minimum and ideal price for a piece. The buyer securely submits their budget. If there's an overlap, the piece is sold at a fair price. You avoid the pressure of having to justify your rates to bargain hunters."
+  },
+  contractor: {
+    id: 'contractor',
+    label: 'Contractor',
+    title: "I'm a Contractor",
+    desc: "Bidding on a job where the client has an undisclosed budget can lead to a race to the bottom.",
+    example: "Submit your bid securely. The client only sees it if it falls within their acceptable range. This protects your pricing strategy and ensures you only spend time on leads that are actually viable."
+  },
+  investor: {
+    id: 'investor',
+    label: 'Investor',
+    title: "I'm an Investor",
+    desc: "Negotiating a startup valuation is exhausting and can sour the relationship before it even starts.",
+    example: "Both you and the founder submit your acceptable valuation ranges. If there's an overlap, you instantly have a baseline for your term sheet. If you're too far apart, you both save weeks of painful due diligence."
+  }
+};
+
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'partyA' | 'partyB'>('partyA');
+  const [activeRole, setActiveRole] = useState<keyof typeof rolesData>('recruiter');
   const [stats, setStats] = useState({ fairDeals: 0, unfairDealsPrevented: 0 });
 
   useEffect(() => {
@@ -157,6 +203,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Use Cases Section */}
+      <section className="use-cases">
+        <div className="section-header">
+          <h2>Sounds too <br className="mobile-break" /><span className="text-gradient">complicated?</span></h2>
+          <p>Check practical examples of how the protocol protects your interests.</p>
+        </div>
+
+        <div className="roles-container">
+          <div className="roles-sidebar">
+            {Object.values(rolesData).map((role) => (
+              <button
+                key={role.id}
+                className={`role-btn ${activeRole === role.id ? 'active' : ''}`}
+                onClick={() => setActiveRole(role.id as keyof typeof rolesData)}
+              >
+                {role.label}
+              </button>
+            ))}
+          </div>
+          <div className="role-content animate-fade-in" key={activeRole}>
+            <div className="role-content-inner">
+              <h3>{rolesData[activeRole].title}</h3>
+              <p>{rolesData[activeRole].desc}</p>
+              <div className="role-example">
+                <strong>Real-world Example:</strong>
+                {rolesData[activeRole].example}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Comparison Section */}
       <section className="visual-comparison">
         <div className="section-header">
@@ -228,7 +306,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
+
     </div>
   );
 }
@@ -258,7 +336,7 @@ function ProtocolVisualizer({ role }: { role: 'A' | 'B' }) {
         </div>
       </div>
 
-      
+
     </div>
   );
 }

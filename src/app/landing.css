@@ -22,6 +22,7 @@
 .text-gradient {
   background: linear-gradient(135deg, var(--accent-color), #a78bfa);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -367,6 +368,93 @@
   box-shadow: 0 0 8px var(--error-color);
 }
 
+/* Roles / Use Cases Section */
+.use-cases {
+  padding: 3rem 0;
+}
+
+.mobile-break {
+  display: none;
+}
+
+.roles-container {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+.roles-sidebar {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.role-btn {
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.role-btn.active {
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: var(--accent-color);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.role-content {
+  padding: 3rem 3rem 3rem 4rem;
+  display: flex;
+  align-items: center;
+}
+
+.role-content-inner {
+  max-width: 600px;
+}
+
+.role-content h3 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.role-content p {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.role-example {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border-left: 4px solid var(--accent-color);
+}
+
+.role-example strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
 /* Comparison Grid */
 .comparison-grid {
   display: grid;
@@ -540,8 +628,13 @@
     max-width: 500px;
   }
 
+  .mobile-break {
+    display: block;
+  }
+
   .perspectives,
   .visual-comparison,
+  .use-cases,
   .final-cta {
     padding: 4rem 0;
   }
@@ -549,6 +642,39 @@
   .perspective-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
+  }
+  
+  .roles-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .roles-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .roles-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .role-btn {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    padding: 1.25rem 1rem;
+  }
+  
+  .role-btn.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--accent-color);
+  }
+  
+  .role-content {
+    padding: 2.5rem 2rem;
   }
 }
 
