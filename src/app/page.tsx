@@ -92,8 +92,8 @@ export default function LandingPage() {
                   <h3>The Initiator Strategy</h3>
                   <p>As Party A, you set the stage. Define the range you are comfortable with and invite the other party.</p>
                   <ul className="feature-list">
-                    <li><strong>Define the Shared Reality:</strong> Set your ideal target price and a maximum <strong>Flexibility Spread (e.g., 20%)</strong>. Your resulting &quot;No Regret&quot; range is generated from this.</li>
-                    <li><strong>The Spread is the Limit:</strong> The flexibility spread you choose dictates the maximum allowed width for Party B&apos;s range, preventing them from submitting artificially wide nets.</li>
+                    <li><strong>Define the Shared Reality:</strong> Set your ideal target price and a maximum <strong>Negotiation Spread (e.g., 20%)</strong>. Your resulting &quot;No Regret&quot; range is generated from this.</li>
+                    <li><strong>The Spread is the Limit:</strong> The negotiation spread you choose dictates the maximum allowed width for Party B&apos;s range, preventing them from submitting artificially wide nets.</li>
                     <li><strong>Protect Your Budget:</strong> If their ask is outside your range + the % spread, the deal ends silently in a Deadlock. They never know what your numbers were.</li>
                   </ul>
                 </div>
@@ -125,7 +125,7 @@ export default function LandingPage() {
                   <h3>The Responder Strategy</h3>
                   <p>As Party B, you respond to an invitation. You provide your &quot;No Regret&quot; range—the numbers you&apos;d be happy to sign today.</p>
                   <ul className="feature-list">
-                    <li><strong>Constrained by the Spread:</strong> You must submit a range within the Initiator&apos;s chosen <strong>Flexibility Spread (e.g., 20%)</strong> to keep the negotiation fair.</li>
+                    <li><strong>Constrained by the Spread:</strong> You must submit a range within the Initiator&apos;s chosen <strong>Negotiation Spread (e.g., 20%)</strong> to keep the negotiation fair.</li>
                     <li><strong>Internal Comparison:</strong> Your numbers are compared privately on the server. If you don&apos;t overlap, your specific target is never disclosed.</li>
                     <li><strong>Fair Midpoints:</strong> If you overlap, the deal happens at the exact midpoint of the shared range, ensuring both parties get a &quot;better than expected&quot; price.</li>
                   </ul>
@@ -212,7 +212,7 @@ export default function LandingPage() {
                 <div className="bar-range b" style={{ left: '70%', width: '20%' }}>Party B</div>
               </div>
             </div>
-            <p className="result-text error">Result: Deadlock. Gap exceeds the 20% flexibility spread limit. No data revealed.</p>
+            <p className="result-text error">Result: Deadlock. Gap exceeds the 20% negotiation spread limit. No data revealed.</p>
           </div>
         </div>
       </section>
@@ -756,7 +756,7 @@ function ProtocolVisualizer({ role }: { role: 'A' | 'B' }) {
         <div className="viz-number">1</div>
         <div className="viz-info">
           <strong>Private Threshold</strong>
-          <p>Define your ideal target and set your negotiation flexibility.</p>
+          <p>Define your ideal target and set your negotiation spread.</p>
         </div>
       </div>
       <div className="viz-step">

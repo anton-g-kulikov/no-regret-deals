@@ -6,7 +6,7 @@
 
 When negotiating a salary, acquiring art, or closing an M&A deal, revealing your target price first can leave money on the table (the "Winner's Curse"). The **Private Bounded Alignment Protocol (PBAP)** solves this by acting as a trusted, zero-knowledge intermediary.
 
-1. **Party A (Initiator)** creates a deal securely, setting a Negotiation Subject, their counterpart's email, their Ideal Target, and their maximum Flexibility Spread (e.g., ±15%).
+1. **Party A (Initiator)** creates a deal securely, setting a Negotiation Subject, their counterpart's email, their Ideal Target, and their maximum Negotiation Spread (e.g., 15%).
 2. **Party B (Responder)** is securely invited and submits their own No Regret Target.
 3. The protocol automatically generates and privately compares ranges based on the chosen flexibility constraint.
 4. **Outcome**:

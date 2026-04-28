@@ -18,9 +18,9 @@ A two-step alignment protocol that allows agreements only when both parties are 
 - Enterprise negotiated deals
 
 ### User Flow
-1. Initiator configures Midpoint + Flexibility (10%, 15%, 20%, 30%)
+1. Initiator configures Midpoint + Negotiation Spread (10%, 15%, 20%, 30%)
 2. Responder submits their Midpoint
-3. System wraps both in the shared flexibility and evaluates overlap
+3. System wraps both in the shared spread and evaluates overlap
 4. If no overlap → feasibility check
 5. If feasible → direction revealed
 6. Both submit final Midpoints

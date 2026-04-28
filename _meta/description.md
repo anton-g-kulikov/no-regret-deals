@@ -46,11 +46,11 @@ The same flexibility percentage applies symmetrically to both parties.
 3.3 Effective Range Calculation
 
 The system automatically calculates an effective range from any submitted midpoint:
-R = [M × (1 - F), M × (1 + F)]
+R = [M × (1 - F/2), M × (1 + F/2)]
 
 Example with F = 20%:
 Midpoint: 100
-Effective Range: 80–120
+Effective Range: 90–110 (100 ± 10% of midpoint)
 
 ⸻
 
@@ -71,7 +71,7 @@ Party B submits only their midpoint:
 M_B
 
 The system automatically expands this into an effective range:
-B₁ = [M_B × (1 - F), M_B × (1 + F)]
+B₁ = [M_B × (1 - F/2), M_B × (1 + F/2)]
 
 ⸻
 
