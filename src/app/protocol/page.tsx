@@ -9,9 +9,9 @@ export default function ProtocolPage() {
         <header className="spec-header">
           <Link href="/" className="back-link">← Return to Application</Link>
           <div className="status-chip">Draft Specification v1.2</div>
-          <h1>Private (Bounded) Alignment Protocol (PBAP)</h1>
+          <h1>Private Calibration Protocol (PCP)</h1>
           <p className="abstract">
-            A multi-stage negotiation protocol for identifying value alignment between two parties
+            A multi-stage calibration protocol for identifying alignment between two parties
             without premature disclosure of private thresholds.
           </p>
         </header>
@@ -21,8 +21,8 @@ export default function ProtocolPage() {
           <div className="definition-box">
             <p><strong>Parties:</strong> Initiator (A) and Responder (B).</p>
             <p><strong>Threshold Range:</strong> A range [min, max] representing a party&apos;s &quot;No Regret&quot; zone.</p>
-            <p><strong>Flexibility Spread (&sigma;):</strong> A percentage (e.g., 20%) defining the maximum allowed expansion of the range.</p>
-            <p><strong>Target Value (T):</strong> The ideal value at the center of the range.</p>
+            <p><strong>Calibration Flexibility (&sigma;):</strong> A percentage (e.g., 20%) defining the maximum allowed expansion of the range.</p>
+            <p><strong>Target Value (T):</strong> The ideal value at the center of your range.</p>
           </div>
         </section>
 
@@ -32,7 +32,7 @@ export default function ProtocolPage() {
           <div className="phase">
             <h3>Phase I: Initialization & Commitment</h3>
             <p>
-              Initiator A defines a target value T<sub>A</sub> and selects a flexibility spread (σ).</p>
+              Initiator A defines a target value T<sub>A</sub> and selects a calibration flexibility (σ).</p>
             <p>
               The system generates an initial range: [T<sub>A</sub> - σ, T<sub>A</sub> + σ].</p>
             <p>
@@ -55,7 +55,7 @@ export default function ProtocolPage() {
               Overlap Max = Minimum of both Maximums
             </div>
             <p>
-              If an overlap exists, the deal is <strong>COMPLETED</strong>.
+              If an overlap exists, the calibration is <strong>SUCCESSFUL</strong>.
               The final agreement value is the center point of the overlapping section.
             </p>
           </div>
@@ -75,7 +75,7 @@ export default function ProtocolPage() {
             </div>
             <p>
               If feasible, the protocol reveals a <strong>Directional Hint</strong> (e.g., &quot;Party B is Above&quot;) to both parties.
-              If not feasible, the protocol enters <strong>DEADLOCK</strong> and terminates without revealing any directional data.
+              If not feasible, the protocol concludes as <strong>NOT ALIGNED</strong> and terminates without revealing any directional data.
             </p>
           </div>
         </section>
@@ -87,13 +87,13 @@ export default function ProtocolPage() {
               <h4>Internal Comparison</h4>
               <p>
                 Calculations are performed privately within the system. Ranges are never shared between parties.
-                In a DEADLOCK state, no information (including the direction of the gap) is revealed.
+                In a non-aligned state, no information (including the direction of the gap) is revealed.
               </p>
             </div>
             <div className="security-item">
               <h4>Anti-Fishing Constraint</h4>
               <p>
-                By locking the flexibility spread (σ) globally for the deal, a Responder cannot use a disproportionately
+                By locking the calibration flexibility (σ) globally, a Responder cannot use a disproportionately
                 large range to &quot;fish&quot; for the Initiator&apos;s target.
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function ProtocolPage() {
               <h4>Equitable Surplus Extraction</h4>
               <p>
                 The use of overlap midpoints removes the first-mover disadvantage.
-                Neither party can &quot;win&quot; the negotiation through aggressive anchoring; the protocol extracts the shared surplus equally.
+                Neither party can &quot;win&quot; the calibration through aggressive anchoring; the protocol extracts the shared surplus equally.
               </p>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function ProtocolPage() {
         <section className="spec-section">
           <h2>4. Reference Implementation</h2>
           <div className="download-box">
-            <p>The complete, open-source implementation of the BAP engine and this application is available on GitHub.</p>
+            <p>The complete, open-source implementation of the calibration engine and this application is available on GitHub.</p>
             <a href="https://github.com/anton-g-kulikov/no-regret-deals" target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               View Source on GitHub
             </a>
