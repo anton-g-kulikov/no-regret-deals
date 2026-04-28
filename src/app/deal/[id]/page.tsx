@@ -350,6 +350,14 @@ function SubjectView({ description }: { description?: string }) {
 
 function InitiatorInstructions({ deal }: { deal: Deal }) {
   const url = typeof window !== 'undefined' ? window.location.href : '';
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="card instructions-card">
       <h2>Deal Created Successfully</h2>
@@ -358,10 +366,9 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
       <div className="share-box">
         <p className="share-label">Share this URL with Party B:</p>
         <code className="share-code">{url}</code>
-        <button className="btn btn-primary share-btn" onClick={() => {
-          navigator.clipboard.writeText(url);
-          alert('URL copied to clipboard');
-        }}>Copy Invite URL</button>
+        <button className={`btn share-btn ${copied ? 'btn-success' : 'btn-primary'}`} onClick={handleCopy}>
+          {copied ? 'Copied to Clipboard!' : 'Copy Invite URL'}
+        </button>
       </div>
 
       <div className="rule-box">
