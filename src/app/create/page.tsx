@@ -12,7 +12,7 @@ export default function CreateDealPage() {
   
   // Core Form State
   const [midpoint, setMidpoint] = useState('100000');
-  const [selectedSpread, setSelectedSpread] = useState(0.2); // 20%
+  const [selectedSpread, setSelectedSpread] = useState(0.1); // 10% default
   const [partyBEmail, setPartyBEmail] = useState('');
   const [currency, setCurrency] = useState('$');
   const [description, setDescription] = useState('');
@@ -176,7 +176,7 @@ export default function CreateDealPage() {
                 </div>
                 
                 <div className="spread-grid">
-                  {[0.1, 0.15, 0.2, 0.3].map((s) => (
+                  {[0.05, 0.1, 0.15, 0.2].map((s) => (
                     <button
                       key={s}
                       type="button"
@@ -248,8 +248,24 @@ export default function CreateDealPage() {
         .flex-value { font-size: 1.25rem; font-weight: bold; color: var(--accent-color); }
         
         .spread-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 2.5rem; }
-        .spread-btn { padding: 1rem; font-size: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); }
-        .active-spread { background: var(--accent-color); border: none; }
+        .spread-btn { 
+          padding: 1rem; 
+          font-size: 1.1rem; 
+          background: rgba(255,255,255,0.05); 
+          border: 1px solid var(--border-color); 
+          color: var(--text-secondary);
+          font-weight: 600;
+          transition: all 0.2s ease;
+        }
+        .spread-btn:hover {
+          background: rgba(255,255,255,0.08);
+          color: var(--text-primary);
+        }
+        .active-spread { 
+          background: var(--accent-color); 
+          border-color: var(--accent-color);
+          color: white !important; 
+        }
         
         .preview-box { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 1rem; padding: 2rem; }
         .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
