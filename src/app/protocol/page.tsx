@@ -94,7 +94,7 @@ export default function ProtocolPage() {
               <h4>Anti-Fishing Constraint</h4>
               <p>
                 By locking the flexibility spread (σ) globally for the deal, a Responder cannot use a disproportionately
-                large range to &quot;fish&quot; for the Initiator&apos;s budget.
+                large range to &quot;fish&quot; for the Initiator&apos;s target.
               </p>
             </div>
             <div className="security-item">
