@@ -7,10 +7,10 @@ const FALLBACK_ID = 'no-regret-deals';
  * Prevents "your-project-id" from leaking into the Admin SDK.
  */
 function getFinalProjectId(): string {
-  const p1 = process.env.FIREBASE_PROJECT_ID;
+  const p1 = process.env.FIREBASE_PROJECT_ID || process.env.ADMIN_PROJECT_ID;
   const p2 = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   
-  console.log(`🔍 ENV Check: FIREBASE_PROJECT_ID="${p1}", NEXT_PUBLIC_FIREBASE_PROJECT_ID="${p2}"`);
+  console.log(`🔍 ENV Check: PROJECT_ID="${p1}", NEXT_PUBLIC="${p2}"`);
 
   const isPlaceholder = (id?: string) => 
     !id || id.includes('your-') || id.includes('your_') || id === 'undefined' || id === 'null';
@@ -39,8 +39,8 @@ export function initializeFirebaseAdmin() {
 
   const firebaseAdminConfig = {
     projectId: PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || process.env.ADMIN_CLIENT_EMAIL,
+    privateKey: (process.env.FIREBASE_PRIVATE_KEY || process.env.ADMIN_PRIVATE_KEY)?.replace(/\\n/g, '\n'),
   };
 
   const useServiceAccount = 
