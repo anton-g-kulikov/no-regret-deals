@@ -27,8 +27,8 @@ export default function DealPage() {
     const flex = deal?.flexibility || deal?.spread || 0.2;
     if (!m || m <= 0) return { anchor: { min: 0, max: 0 }, targets: { min: 0, max: 0 } };
 
-    const tMin = Math.round(m * (1 - flex));
-    const tMax = Math.round(m * (1 + flex));
+    const tMin = Math.round(m * (1 - flex / 2));
+    const tMax = Math.round(m * (1 + flex / 2));
 
     return { 
       anchor: { min: tMin, max: tMax }, 
@@ -353,7 +353,7 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
   return (
     <div className="card instructions-card">
       <h2>Deal Created Successfully</h2>
-      <p>Your initial range and <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong> are locked in.</p>
+      <p>Your initial range and <strong>{formatPercent(deal.flexibility || deal.spread)} spread</strong> are locked in.</p>
       
       <div className="share-box">
         <p className="share-label">Share this URL with Party B:</p>
@@ -403,7 +403,7 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
       <div className="private-analysis">
         <h4>Private Analysis</h4>
         <p>
-          Submit your <strong>No Regret Target</strong>. The system will create a flexibility range around it (based on a <strong>{formatPercent(deal.flexibility || deal.spread || 0)} spread</strong>) and privately compare it with the other party&apos;s range.
+          Submit your <strong>No Regret Target</strong>. The system will create a private spread around it (<strong>{formatPercent(deal.flexibility || deal.spread || 0)} total width</strong>) and privately compare it with the other party&apos;s range.
         </p>
       </div>
       
@@ -493,8 +493,8 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
         <MarketSpreadVisualizer 
           range={r1Range} 
           targets={{
-            min: Math.round(((r1Range.min + r1Range.max)/2) * (1 - (deal.flexibility || deal.spread))),
-            max: Math.round(((r1Range.min + r1Range.max)/2) * (1 + (deal.flexibility || deal.spread)))
+            min: Math.round(((r1Range.min + r1Range.max)/2) * (1 - (deal.flexibility || deal.spread) / 2)),
+            max: Math.round(((r1Range.min + r1Range.max)/2) * (1 + (deal.flexibility || deal.spread) / 2))
           }}
           currency={deal.currency} 
           hint={hint} 

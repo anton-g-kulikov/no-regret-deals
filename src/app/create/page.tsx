@@ -5,6 +5,23 @@ import { auth, googleProvider, signInWithPopup } from '@/lib/firebase-client';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { formatCurrency, formatPercent } from '@/lib/protocol/format';
 
+const COMMON_CURRENCIES = [
+  { symbol: '$', label: 'USD ($)' },
+  { symbol: '€', label: 'EUR (€)' },
+  { symbol: '¥', label: 'JPY (¥)' },
+  { symbol: '£', label: 'GBP (£)' },
+  { symbol: 'A$', label: 'AUD (A$)' },
+  { symbol: 'C$', label: 'CAD (C$)' },
+  { symbol: 'CHF', label: 'CHF' },
+  { symbol: '¥', label: 'CNY (¥)' },
+  { symbol: 'HK$', label: 'HKD (HK$)' },
+  { symbol: 'kr', label: 'SEK (kr)' },
+  { symbol: '₽', label: 'RUB (₽)' },
+  { symbol: '₴', label: 'UAH (₴)' },
+  { symbol: 'R$', label: 'BRL (R$)' },
+  { symbol: 'د.إ', label: 'AED (د.إ)' },
+];
+
 export default function CreateDealPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -145,12 +162,17 @@ export default function CreateDealPage() {
               <div className="form-group mb-3">
                 <label className="label uppercase-label">Your Ideal Target Price</label>
                 <div className="currency-input-group">
-                  <input 
-                    className="input currency-symbol" 
-                    type="text" 
+                  <select 
+                    className="input currency-select" 
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                  />
+                  >
+                    {COMMON_CURRENCIES.map((c) => (
+                      <option key={`${c.label}-${c.symbol}`} value={c.symbol}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
                   <input 
                     className="input amount-input" 
                     type="number" 
@@ -165,9 +187,9 @@ export default function CreateDealPage() {
               <div className="flexibility-section">
                 <div className="flexibility-header">
                   <div>
-                    <h3>Negotiation Flexibility</h3>
+                    <h3>Negotiation Spread</h3>
                     <p className="flex-desc">
-                      The maximum &quot;distance&quot; you&apos;re willing to move to find common ground.
+                      The total range of movement you&apos;re willing to consider.
                     </p>
                   </div>
                   <div className="flex-value">
@@ -238,7 +260,19 @@ export default function CreateDealPage() {
         .input-hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; }
         
         .currency-input-group { display: flex; gap: 1rem; }
-        .currency-symbol { width: 80px; text-align: center; font-size: 1.25rem; font-weight: bold; }
+        .currency-select { 
+          width: 140px; 
+          text-align: left; 
+          font-size: 1.1rem; 
+          font-weight: 600; 
+          cursor: pointer;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.5)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 0.75rem center;
+          background-size: 1rem;
+          padding-right: 2.5rem;
+        }
         .amount-input { font-size: 1.25rem; font-weight: bold; padding: 1rem; }
         
         .flexibility-section { border-top: 1px solid var(--border-color); padding-top: 2.5rem; margin-top: 2.5rem; }
