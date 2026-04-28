@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, connectAuthEmulator, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'dummy_api_key_for_build',
@@ -9,6 +10,7 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'dummy.appspot.com',
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '123456789',
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '1:123456789:web:abcdef',
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -19,6 +21,15 @@ if (typeof window !== 'undefined' && firebaseConfig.apiKey === 'dummy_api_key_fo
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+
+let analytics: Analytics | undefined;
+if (typeof window !== 'undefined') {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
+}
 
 // Connect to Emulators if running locally
 if (typeof window !== 'undefined') {
@@ -37,6 +48,15 @@ if (typeof window !== 'undefined') {
 
 export const signOut = () => firebaseSignOut(auth);
 
+export const logAnalyticsEvent = async (eventName: string, eventParams?: any) => {
+  if (typeof window !== 'undefined') {
+    const { logEvent } = await import('firebase/analytics');
+    if (analytics) {
+      logEvent(analytics, eventName, eventParams);
+    }
+  }
+};
+
 const wrappedSignInWithPopup = async (authObj: any, provider: any) => {
   if (firebaseConfig.apiKey === 'dummy_api_key_for_build') {
     const msg = "Firebase API Key is missing in this environment. Ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in your production host (e.g., Vercel) before building.";
@@ -46,4 +66,4 @@ const wrappedSignInWithPopup = async (authObj: any, provider: any) => {
   return signInWithPopup(authObj, provider);
 };
 
-export { app, auth, db, googleProvider, wrappedSignInWithPopup as signInWithPopup };
+export { app, auth, db, analytics, googleProvider, wrappedSignInWithPopup as signInWithPopup };
