@@ -1,4 +1,10 @@
 import './globals.css';
+import './navbar.css';
+import './footer.css';
+import './landing.css';
+import './create.css';
+import './deal.css';
+import './protocol.css';
 import type { Metadata } from 'next';
 
 import Navbar from '@/components/Navbar';

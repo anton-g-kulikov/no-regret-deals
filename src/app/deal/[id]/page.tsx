@@ -209,26 +209,7 @@ function MarketSpreadVisualizer({ range, targets, currency, hint }: { range: { m
         </div>
       )}
 
-      <style jsx>{`
-        .visualizer-container { margin: 2.5rem 0; position: relative; }
-        .visualizer-track { height: 56px; background: rgba(255,255,255,0.03); border-radius: 16px; position: relative; border: 1px solid var(--border-color); }
-        .visualizer-secure-range { position: absolute; height: 100%; background: linear-gradient(to bottom, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.1)); z-index: 1; border-left: 2px solid var(--accent-color); border-right: 2px solid var(--accent-color); }
-        .range-label { position: absolute; top: -24px; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
-        .range-label.min { left: 0; transform: translateX(-50%); }
-        .range-label.max { right: 0; transform: translateX(50%); }
-        
-        .visualizer-midpoint-line { position: absolute; width: 2px; height: 100%; background: white; z-index: 2; box-shadow: 0 0 15px rgba(255,255,255,0.3); transform: translateX(-50%); opacity: 0.8; }
-        
-        .visualizer-target-container { position: relative; height: 60px; margin-top: 0.5rem; }
-        .visualizer-target-label { display: flex; flex-direction: column; align-items: center; position: absolute; transform: translateX(-50%); z-index: 3; }
-        .visualizer-target-tick { height: 12px; width: 2px; background: var(--text-primary); margin-bottom: 8px; }
-        
-        .target-pill { background: var(--text-primary); color: var(--bg-color); padding: 0.4rem 0.8rem; border-radius: 99px; display: flex; flex-direction: column; align-items: center; line-height: 1.1; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .target-label { font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; opacity: 0.8; }
-        .target-value { font-size: 1rem; font-weight: 900; }
-
-        .visualizer-hint { text-align: center; margin-top: 2rem; color: var(--accent-color); font-weight: 800; font-size: 1rem; background: rgba(99,102,241,0.05); padding: 1rem; border-radius: 12px; border: 1px solid rgba(99,102,241,0.2); letter-spacing: 0.02em; }
-      `}</style>
+      
     </div>
   );
 }
@@ -253,83 +234,7 @@ function Header({ deal, userEmail }: { deal: Deal, userEmail: string }) {
         </div>
       </div>
 
-      <style jsx>{`
-        .page-header {
-          margin-bottom: 2.5rem;
-          padding-bottom: 1.5rem;
-          border-bottom: 1px solid var(--border-color);
-        }
-
-        .header-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 1.25rem;
-        }
-
-        .header-top h1 {
-          margin: 0;
-          font-size: 2.25rem;
-          line-height: 1.2;
-        }
-
-        .header-meta {
-          display: flex;
-          justify-content: space-between;
-          gap: 1.5rem;
-          font-size: 0.9rem;
-          color: var(--text-secondary);
-        }
-
-        .meta-item {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-          min-width: 0; /* Allow shrinking */
-        }
-
-        .meta-label {
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          opacity: 0.7;
-        }
-
-        .meta-value {
-          color: var(--text-primary);
-          font-weight: 500;
-          word-break: break-all;
-        }
-
-        .user-email {
-          font-weight: 700;
-        }
-
-        .text-right {
-          text-align: right;
-        }
-
-        @media (max-width: 640px) {
-          .header-top {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .header-meta {
-            flex-direction: column;
-            gap: 1rem;
-          }
-
-          .text-right {
-            text-align: left;
-          }
-
-          .header-top h1 {
-            font-size: 1.85rem;
-          }
-        }
-      `}</style>
+      
     </header>
   );
 }
@@ -340,11 +245,7 @@ function SubjectView({ description }: { description?: string }) {
     <div className="card subject-card">
       <h3 className="subject-title">Negotiation Subject</h3>
       <p className="subject-desc">{description}</p>
-      <style jsx>{`
-        .subject-card { margin-bottom: 2rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .subject-title { font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
-        .subject-desc { font-size: 1.15rem; line-height: 1.6; white-space: pre-wrap; }
-      `}</style>
+      
     </div>
   );
 }
@@ -382,18 +283,7 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
       <div className="waiting-box">
         <p className="animate-pulse">Waiting for Party B to join...</p>
       </div>
-      <style jsx>{`
-        .instructions-card h2 { margin-bottom: 1.5rem; }
-        .instructions-card > p { margin-bottom: 1.5rem; }
-        .share-box { background: var(--surface-hover); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem; border: 1px solid rgba(99, 102, 241, 0.3); }
-        .share-label { font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary); }
-        .share-code { word-break: break-all; color: var(--accent-color); font-size: 0.95rem; }
-        .share-btn { width: 100%; margin-top: 1rem; }
-        .rule-box { border-left: 4px solid var(--accent-color); padding-left: 1rem; margin: 2rem 0; }
-        .rule-box h4 { color: var(--accent-color); font-size: 1.05rem; }
-        .rule-box p { font-size: 1rem; margin-top: 0.5rem; line-height: 1.5; }
-        .waiting-box { margin-top: 2rem; padding: 1.5rem; border: 1px dashed var(--accent-color); border-radius: 0.5rem; text-align: center; }
-      `}</style>
+      
     </div>
   );
 }
@@ -445,25 +335,7 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
           </button>
         </form>
       </div>
-      <style jsx>{`
-        .responder-card { padding: 2.5rem; }
-        .responder-card h2 { margin-bottom: 1.5rem; }
-        .welcome-desc { margin-bottom: 1.5rem; }
-        
-        .private-analysis { background: rgba(99, 102, 241, 0.05); padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 2rem; border: 1px solid rgba(99, 102, 241, 0.2); }
-        .private-analysis h4 { color: var(--accent-color); margin-bottom: 0.5rem; font-size: 1.05rem; }
-        .private-analysis p { font-size: 1rem; line-height: 1.5; }
-        
-        .input-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-        
-        .preview-container { margin-top: 2rem; margin-bottom: 2rem; }
-        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-        .preview-header h4 { font-size: 1rem; color: var(--text-secondary); }
-        .preview-badge { font-size: 0.9rem; }
-        .preview-desc { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
-        
-        .submit-btn { width: 100%; margin-top: 1.5rem; }
-      `}</style>
+      
     </div>
   );
 }
@@ -490,11 +362,7 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
         <div className="waiting-pulse">
           <p className="animate-pulse">Waiting for your counterpart to decide or submit their final range...</p>
         </div>
-        <style jsx>{`
-          .submitted-card { text-align: center; }
-          .submitted-card h2 { margin-bottom: 1.5rem; }
-          .waiting-pulse { padding: 2rem; border: 1px dashed var(--accent-color); border-radius: 1rem; }
-        `}</style>
+        
       </div>
     );
   }
@@ -556,41 +424,7 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
             </button>
           </div>
 
-          <style jsx>{`
-            .r2-card h2 { margin-bottom: 1.5rem; }
-            .r2-card > p { margin-bottom: 1.5rem; }
-            .r2-submission-box { margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; }
-            .r2-submission-box h3 { margin-bottom: 1rem; }
-            .r2-instructions { margin-bottom: 1.5rem; font-size: 1rem; color: var(--text-secondary); line-height: 1.5; }
-            .input-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-            .preview-box { margin-top: 2rem; margin-bottom: 2rem; }
-            .preview-box h4 { font-size: 1rem; color: var(--text-secondary); margin-bottom: 1rem; }
-            .preview-desc { font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem; text-align: center; }
-            .overlap-error {
-              background: rgba(239, 68, 68, 0.1);
-              color: var(--error-color);
-              padding: 1rem;
-              border-radius: 0.5rem;
-              margin-bottom: 1.5rem;
-              font-weight: 600;
-              border: 1px solid rgba(239, 68, 68, 0.2);
-            }
-            .r2-actions {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 1rem;
-              margin-top: 1.5rem;
-            }
-            .btn-error {
-              background: var(--error-color);
-              color: white;
-            }
-            @media (max-width: 640px) {
-              .r2-actions {
-                grid-template-columns: 1fr;
-              }
-            }
-          `}</style>
+          
         </form>
       </div>
     </div>
@@ -622,36 +456,7 @@ function ResultView({ deal }: { deal: Deal }) {
         </p>
       </div>
 
-      <style jsx>{`
-        .result-card { text-align: center; }
-        .result-card.match { border: 2px solid var(--success-color); }
-        .result-card.no-match { border: 1px solid var(--text-secondary); }
-        .success-title { color: var(--success-color); margin-bottom: 1rem; }
-        .match-value { font-size: 4rem; font-weight: bold; margin: 2rem 0; }
-        .secondary-title { color: var(--text-secondary); margin-bottom: 1rem; }
-        
-        .next-steps {
-          margin-top: 3rem;
-          padding-top: 2rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          text-align: left;
-          max-width: 500px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-        .next-steps h4 {
-          font-size: 0.9rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--text-secondary);
-          margin-bottom: 0.75rem;
-        }
-        .next-steps p {
-          font-size: 0.95rem;
-          line-height: 1.6;
-          color: var(--text-secondary);
-        }
-      `}</style>
+      
     </div>
   );
 }
@@ -670,32 +475,7 @@ function RejectedView() {
         </p>
       </div>
 
-      <style jsx>{`
-        .reject-card { text-align: center; }
-        .reject-card h2 { color: var(--error-color); margin-bottom: 1.5rem; }
-        
-        .next-steps {
-          margin-top: 3rem;
-          padding-top: 2rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          text-align: left;
-          max-width: 500px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-        .next-steps h4 {
-          font-size: 0.9rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--text-secondary);
-          margin-bottom: 0.75rem;
-        }
-        .next-steps p {
-          font-size: 0.95rem;
-          line-height: 1.6;
-          color: var(--text-secondary);
-        }
-      `}</style>
+      
     </div>
   );
 }
@@ -708,11 +488,7 @@ function AuthView({ handleLogin }: { handleLogin: () => void }) {
         <p>Please verify your identity to access this protocol.</p>
         <button className="btn btn-primary" onClick={handleLogin}>Sign in with Google</button>
       </div>
-      <style jsx>{`
-        .auth-card { text-align: center; }
-        .auth-card h2 { margin-bottom: 1.5rem; }
-        .auth-card p { margin-bottom: 2rem; opacity: 0.8; }
-      `}</style>
+      
     </main>
   );
 }
@@ -725,11 +501,7 @@ function AccessDeniedView({ email }: { email: string }) {
         <p>Account <strong>{email}</strong> is not authorized for this deal.</p>
         <button className="btn sign-out-btn" onClick={() => signOut(auth)}>Sign out</button>
       </div>
-      <style jsx>{`
-        .denied-card { text-align: center; }
-        .denied-card h2 { color: var(--error-color); margin-bottom: 1.5rem; }
-        .sign-out-btn { margin-top: 2rem; }
-      `}</style>
+      
     </main>
   );
 }
