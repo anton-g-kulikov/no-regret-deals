@@ -33,11 +33,11 @@ export default function CreateDealPage() {
   const [partyBEmail, setPartyBEmail] = useState('');
   const [currency, setCurrency] = useState('$');
   const [description, setDescription] = useState('');
-
+  
   // Derived Protocol Values
-  const { anchor, targets, spread } = useMemo(() => {
+  const { anchor, spread } = useMemo(() => {
     const m = Number(midpoint);
-    if (!m || m <= 0) return { anchor: { min: 0, max: 0 }, targets: { min: 0, max: 0 }, spread: selectedSpread };
+    if (!m || m <= 0) return { anchor: { min: 0, max: 0 }, spread: selectedSpread };
 
     const tMin = Math.round(m * (1 - selectedSpread / 2));
     const tMax = Math.round(m * (1 + selectedSpread / 2));
@@ -45,7 +45,6 @@ export default function CreateDealPage() {
 
     return {
       anchor: { min: tMin, max: tMax },
-      targets: { min: tMin, max: tMax },
       spread: protocolSpread
     };
   }, [midpoint, selectedSpread]);
@@ -138,7 +137,7 @@ export default function CreateDealPage() {
           <div className="card shadow-lg form-card">
             <form onSubmit={handleCreateDeal}>
               <div className="form-group mb-2">
-                <label className="label uppercase-label">Negotiation Subject</label>
+                <label className="label uppercase-label">Calibration Subject</label>
                 <textarea 
                   className="input subject-input" 
                   rows={2}
@@ -164,7 +163,7 @@ export default function CreateDealPage() {
               </div>
 
               <div className="form-group mb-3">
-                <label className="label uppercase-label">Your Ideal Target Value</label>
+                <label className="label uppercase-label">Your comfortable midpoint</label>
                 <div className="currency-input-group">
                   <select 
                     className="input currency-select" 
@@ -191,9 +190,9 @@ export default function CreateDealPage() {
               <div className="flexibility-section">
                 <div className="flexibility-header">
                   <div>
-                    <h3>Negotiation Spread</h3>
+                    <h3>Alignment Sensitivity</h3>
                     <p className="flex-desc">
-                      The total range of movement you&apos;re willing to consider.
+                      Determines the threshold for &quot;Close Alignment&quot; and directional feedback.
                     </p>
                   </div>
                   <div className="flex-value">
@@ -216,7 +215,7 @@ export default function CreateDealPage() {
 
                 <div className="preview-box">
                   <div className="preview-header">
-                    <h4>Initial Secure Range</h4>
+                    <h4>Secure range preview</h4>
                     <span className="badge badge-active secure-badge">
                       {formatCurrency(anchor.min, currency)} – {formatCurrency(anchor.max, currency)}
                     </span>
@@ -237,7 +236,7 @@ export default function CreateDealPage() {
                 className="btn btn-primary btn-lg submit-btn" 
                 disabled={creating}
               >
-                {creating ? 'Submitting...' : 'Submit Your Target Range'}
+                {creating ? 'Submitting...' : 'Submit your range'}
               </button>
             </form>
           </div>
