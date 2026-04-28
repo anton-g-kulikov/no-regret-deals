@@ -72,15 +72,31 @@ export async function submitBid(params: {
       throw new Error(`Your submission exceeds the maximum allowed flexibility for this deal.`);
     }
 
-    // Continuity check for Round 2
+    let bid1Doc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> | undefined;
+    let bidA1Doc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> | undefined;
+    let counterpartBidDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> | undefined;
+
+    // --- EXECUTE ALL READS FIRST ---
+
     if (params.round === 2) {
       const bid1Ref = dealRef.collection('bids').doc(`${params.party}_1`);
-      const bid1Doc = await t.get(bid1Ref);
-      if (bid1Doc.exists) {
-        const range1 = bid1Doc.data()?.range as Range;
-        if (!validateContinuity(range1, params.range)) {
-          throw new Error('Round 2 range must overlap with your Round 1 range.');
-        }
+      bid1Doc = await t.get(bid1Ref);
+      
+      const counterpartParty = params.party === 'A' ? 'B' : 'A';
+      const counterpartBidRef = dealRef.collection('bids').doc(`${counterpartParty}_2`);
+      counterpartBidDoc = await t.get(counterpartBidRef);
+    } else if (params.party === 'B' && params.round === 1) {
+      const bidA1Ref = dealRef.collection('bids').doc('A_1');
+      bidA1Doc = await t.get(bidA1Ref);
+    }
+
+    // --- EXECUTE ALL WRITES AND LOGIC ---
+
+    // Continuity check for Round 2
+    if (params.round === 2 && bid1Doc && bid1Doc.exists) {
+      const range1 = bid1Doc.data()?.range as Range;
+      if (!validateContinuity(range1, params.range)) {
+        throw new Error('Round 2 range must overlap with your Round 1 range.');
       }
     }
 
@@ -95,9 +111,11 @@ export async function submitBid(params: {
 
     // Evaluate state transitions
     if (params.party === 'B' && params.round === 1) {
-      const bidA1Ref = dealRef.collection('bids').doc('A_1');
-      const bidA1Doc = await t.get(bidA1Ref);
-      const rangeA1 = bidA1Doc.data()?.range as Range;
+      const rangeA1 = bidA1Doc?.data()?.range as Range;
+      
+      if (!rangeA1) {
+        throw new Error('Party A bid not found.');
+      }
 
       const result = evaluateRound1(rangeA1, params.range);
       
@@ -126,8 +144,6 @@ export async function submitBid(params: {
       }
     } else if (params.round === 2) {
       const counterpartParty = params.party === 'A' ? 'B' : 'A';
-      const counterpartBidRef = dealRef.collection('bids').doc(`${counterpartParty}_2`);
-      const counterpartBidDoc = await t.get(counterpartBidRef);
       
       const update: Record<string, any> = {};
       if (params.party === 'A') {
@@ -138,8 +154,8 @@ export async function submitBid(params: {
         update.round2AcceptedB = true;
       }
 
-      if (counterpartBidDoc.exists) {
-        const counterpartRange = counterpartBidDoc.data()?.range;
+      if (counterpartBidDoc && counterpartBidDoc.exists) {
+        const counterpartRange = counterpartBidDoc.data()?.range as Range;
         const bids = {
           [params.party]: params.range,
           [counterpartParty]: counterpartRange

@@ -233,7 +233,7 @@ export default function CreateDealPage() {
                 className="btn btn-primary btn-lg submit-btn" 
                 disabled={creating}
               >
-                {creating ? 'Starting Protocol...' : 'Initialize Private Alignment'}
+                {creating ? 'Submitting...' : 'Submit Your Target Range'}
               </button>
             </form>
           </div>

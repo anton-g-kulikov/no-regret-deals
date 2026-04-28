@@ -440,7 +440,7 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
           </div>
 
           <button className="btn btn-primary submit-btn" disabled={submitting}>
-            Submit Secure Bid
+            Submit Your Target Range
           </button>
         </form>
       </div>
@@ -535,7 +535,7 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
           
           <div className="r2-actions">
             <button className="btn btn-primary" disabled={submitting}>
-              Submit Final Bid
+              Submit Your Target Range
             </button>
             <button type="button" className="btn btn-error" onClick={onReject} disabled={submitting}>
               End Protocol
