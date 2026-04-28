@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { auth, googleProvider, signInWithPopup } from '@/lib/firebase-client';
+import { auth, googleProvider, signInWithPopup, logAnalyticsEvent } from '@/lib/firebase-client';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { formatCurrency, formatPercent } from '@/lib/protocol/format';
 
@@ -92,6 +92,13 @@ export default function CreateDealPage() {
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to create deal');
       
       const { dealId } = await res.json();
+      
+      // Track event
+      await logAnalyticsEvent('deal_initiated', {
+        currency,
+        flexibility: selectedSpread,
+      });
+
       window.location.href = `/deal/${dealId}`;
     } catch (error: unknown) {
       console.error('Error:', error);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { auth, db, googleProvider, signInWithPopup } from '@/lib/firebase-client';
+import { auth, db, googleProvider, signInWithPopup, logAnalyticsEvent } from '@/lib/firebase-client';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import type { Deal, Party, Range } from '@/lib/protocol/types';
@@ -78,6 +78,19 @@ export default function DealPage() {
       return unsub;
     }
   }, [user, deal, id]);
+  
+  // Track outcomes
+  useEffect(() => {
+    if (deal?.status === 'COMPLETED') {
+      logAnalyticsEvent('protocol_completed', { 
+        dealId: id, 
+        outcome: deal.result?.outcome,
+        currency: deal.currency
+      });
+    } else if (deal?.status === 'REJECTED') {
+      logAnalyticsEvent('protocol_rejected', { dealId: id });
+    }
+  }, [deal?.status, id, deal?.result?.outcome, deal?.currency]);
 
   const handleLogin = async () => {
     try {
@@ -113,6 +126,14 @@ export default function DealPage() {
         body: JSON.stringify({ party, round, range: anchor }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
+
+      // Track events
+      if (round === 1 && party === 'B') {
+        logAnalyticsEvent('round1_partyb_bid_submitted', { dealId: id });
+      } else if (round === 2) {
+        logAnalyticsEvent('round2_bid_submitted', { dealId: id, party });
+      }
+
       setMidpoint('');
     } catch (error: unknown) {
       if (error instanceof Error) alert(error.message);
@@ -132,6 +153,8 @@ export default function DealPage() {
         body: JSON.stringify({ party, accept: false }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
+      
+      logAnalyticsEvent('deal_terminated', { dealId: id, party });
     } catch (error: unknown) {
       if (error instanceof Error) alert(error.message);
       else alert('An unexpected error occurred');
