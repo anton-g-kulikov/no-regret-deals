@@ -13,9 +13,22 @@ env:
   - variable: ADMIN_PRIVATE_KEY
     secret: myApiKeySecret
   
-  # Also map your public API key for the browser
+  # Public Firebase configuration for the browser
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: AIzaSyCp2U7DUKBzT7uZeSicNW7qazasSTCLWQk
-    availability:
-      - BUILD
-      - RUNTIME
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: no-regret-deals.firebaseapp.com
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: no-regret-deals
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: no-regret-deals.firebasestorage.app
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "873220469484"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:873220469484:web:713dc18ca562d81c4eebc9"
+    availability: [BUILD, RUNTIME]
