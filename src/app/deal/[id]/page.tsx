@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { auth, db, googleProvider, signInWithPopup, logAnalyticsEvent } from '@/lib/firebase-client';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
-import type { Deal, Party, Range } from '@/lib/protocol/types';
+import type { Deal, Party, Range, Frequency } from '@/lib/protocol/types';
 import { formatCurrency, formatPercent, calculateSafeReach } from '@/lib/protocol/format';
 
 export default function DealPage() {
@@ -69,10 +69,11 @@ export default function DealPage() {
   }, [id, user, authLoading]);
 
   useEffect(() => {
-    if (user && deal && (deal.status === 'DECIDING_ON_R2' || deal.status === 'WAITING_FOR_R2_BIDS')) {
+    if (user && deal) {
       const party = user.email === deal.partyAEmail ? 'A' : 'B';
       const unsub = onSnapshot(doc(db, 'deals', id as string, 'bids', `${party}_1`), (doc) => {
         if (doc.exists()) setR1Range(doc.data().range);
+        else setR1Range(null);
       });
       return unsub;
     }
@@ -165,7 +166,7 @@ export default function DealPage() {
     <main className="container">
       <div className="animate-fade-in">
         <Header deal={deal} userEmail={user.email!} />
-        <SubjectView description={deal.description} />
+        <DealSummary deal={deal} userRange={r1Range} />
 
         {deal.status === 'WAITING_FOR_B1' && (
           isPartyA ? <InitiatorInstructions deal={deal} /> : <ResponderWelcomeView deal={deal} onSubmit={handleSubmission} midpoint={midpoint} setMidpoint={setMidpoint} submitting={submitting} anchor={anchor} />
@@ -185,7 +186,7 @@ export default function DealPage() {
           />
         )}
 
-        {deal.status === 'COMPLETED' && <ResultView deal={deal} />}
+        {deal.status === 'COMPLETED' && <ResultView deal={deal} userEmail={user.email!} />}
         {deal.status === 'REJECTED' && <RejectedView />}
       </div>
     </main>
@@ -206,11 +207,10 @@ function MarketSpreadVisualizer({ range, currency, hint }: { range: { min: numbe
 
   return (
     <div className="visualizer-container">
+      <div className="range-label min" style={{ left: `${leftPadding}%` }}>{formatCurrency(range.min, currency)}</div>
+      <div className="range-label max" style={{ left: `${leftPadding + width}%` }}>{formatCurrency(range.max, currency)}</div>
       <div className="visualizer-track">
-        <div className="visualizer-secure-range" style={{ left: `${leftPadding}%`, width: `${width}%` }}>
-          <div className="range-label min">{formatCurrency(range.min, currency)}</div>
-          <div className="range-label max">{formatCurrency(range.max, currency)}</div>
-        </div>
+        <div className="visualizer-secure-range" style={{ left: `${leftPadding}%`, width: `${width}%` }} />
         <div className="visualizer-midpoint-line" style={{ left: `${leftPadding + (width/2)}%` }} />
       </div>
 
@@ -260,13 +260,41 @@ function Header({ deal, userEmail }: { deal: Deal, userEmail: string }) {
   );
 }
 
-function SubjectView({ description }: { description?: string }) {
-  if (!description) return null;
+function DealSummary({ deal, userRange }: { deal: Deal, userRange: Range | null }) {
+  if (!deal.description) return null;
+  
+  const isMatch = deal.status === 'COMPLETED' && deal.result?.outcome === 'MATCH';
+  
   return (
-    <div className="card subject-card">
-      <h3 className="subject-title">Calibration Subject</h3>
-      <p className="subject-desc">{description}</p>
+    <div className="card summary-card">
+      <div className="summary-section">
+        <h3 className="summary-label">Calibration Subject</h3>
+        <p className="summary-main">{deal.description}</p>
+      </div>
       
+      <div className="summary-details">
+        <div className="summary-detail-item">
+          <span className="summary-label">Cadence</span>
+          <span className="summary-value" style={{ textTransform: 'capitalize' }}>
+            {deal.frequency.replace('-', ' ')}
+          </span>
+        </div>
+        <div className="summary-detail-item">
+          <span className="summary-label">Currency</span>
+          <span className="summary-value">{deal.currency}</span>
+        </div>
+        <div className={`summary-detail-item ${isMatch ? 'success' : ''}`}>
+          <span className="summary-label">Calibration Range</span>
+          <span className="summary-value">
+            {isMatch 
+              ? formatCurrency(deal.result!.value!, deal.currency)
+              : userRange 
+                ? `${formatCurrency(userRange.min, deal.currency)} – ${formatCurrency(userRange.max, deal.currency)}`
+                : 'Private Calibration'
+            }
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -287,7 +315,7 @@ function InitiatorInstructions({ deal }: { deal: Deal }) {
       <p>Your initial range and <strong>{formatPercent(deal.flexibility || deal.spread)} flexibility</strong> are locked in.</p>
       
       <div className="share-box">
-        <p className="share-label">Share this URL with Party B:</p>
+        <p className="share-label">Share this URL with Party B ({deal.partyBEmail}):</p>
         <code className="share-code">{url}</code>
         <button className={`btn share-btn ${copied ? 'btn-success' : 'btn-primary'}`} onClick={handleCopy}>
           {copied ? 'Copied to Clipboard!' : 'Copy Invite URL'}
@@ -327,7 +355,21 @@ function ResponderWelcomeView({ deal, onSubmit, midpoint, setMidpoint, submittin
       </div>
       
       <div className="form-group">
-        <label className="label">Your comfortable midpoint</label>
+        <div className="label-row">
+          <label className="label">Your comfortable midpoint</label>
+          <div className="frequency-switcher">
+            {(['one-time', 'monthly', 'annual'] as Frequency[]).map((f) => (
+              <button
+                key={f}
+                type="button"
+                className={`freq-btn ${deal.frequency === f ? 'active' : ''}`}
+                disabled // Responder follows the deal's frequency for now, or we can make it toggleable
+              >
+                {f.replace('-', ' ')}
+              </button>
+            ))}
+          </div>
+        </div>
         <form onSubmit={onSubmit}>
           <div className="input-row">
              <input className="input" type="number" required placeholder="100,000" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
@@ -407,6 +449,21 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
         </p>
 
         <form onSubmit={onSubmit}>
+          <div className="label-row">
+            <label className="label">Your comfortable midpoint</label>
+            <div className="frequency-switcher">
+              {(['one-time', 'monthly', 'annual'] as Frequency[]).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  className={`freq-btn ${deal.frequency === f ? 'active' : ''}`}
+                  disabled
+                >
+                  {f.replace('-', ' ')}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="input-row">
             <input className="input" type="number" required placeholder="Comfortable Midpoint" value={midpoint} onChange={e => setMidpoint(e.target.value)} />
           </div>
@@ -446,17 +503,31 @@ function Round2UnifiedView({ deal, party, onSubmit, onReject, midpoint, setMidpo
   );
 }
 
-function ResultView({ deal }: { deal: Deal }) {
+function ResultView({ deal, userEmail }: { deal: Deal, userEmail: string }) {
+  const isPartyA = userEmail === deal.partyAEmail;
   const isMatch = deal.result?.outcome === 'MATCH';
   const isFeasible = deal.result?.outcome === 'NO_MATCH' && deal.result?.directionRevealed;
   const isFar = deal.result?.outcome === 'NO_MATCH' && !deal.result?.directionRevealed;
+
+  const direction = deal.result?.direction;
+  let directionText = '';
+  if (direction) {
+    if (isPartyA) {
+      directionText = direction === 'above' ? 'higher' : 'lower';
+    } else {
+      directionText = direction === 'above' ? 'lower' : 'higher';
+    }
+  }
 
   return (
     <div className={`card result-card ${isMatch ? 'match' : (isFeasible ? 'feasible' : 'far')}`}>
       {isMatch && (
         <>
           <h2 className="success-title">Strong Alignment</h2>
-          <div className="match-value">{formatCurrency(deal.result?.value || 0, deal.currency)}</div>
+          <div className="match-value">
+            {formatCurrency(deal.result?.value || 0, deal.currency)}
+            <span className="match-frequency">/ {deal.frequency.replace('-', ' ')}</span>
+          </div>
           <p>Expectations Calibrated. The system found a safe midpoint within your shared flexibility.</p>
         </>
       )}
@@ -465,7 +536,16 @@ function ResultView({ deal }: { deal: Deal }) {
         <>
           <h2 className="warning-title">Close Alignment</h2>
           <p>Your expectations are close, but did not directly overlap in the initial calibration.</p>
-          <p>The system has revealed the direction of the gap to help you find common ground.</p>
+          <p>
+            {directionText ? (
+              <>
+                The system has revealed that the other party's target is <strong>{directionText}</strong> than yours. 
+                This direction is shared with both parties to help you find common ground.
+              </>
+            ) : (
+              "The system has revealed the direction of the gap to help you find common ground."
+            )}
+          </p>
         </>
       )}
 
