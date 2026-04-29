@@ -8,12 +8,13 @@ import { validateContinuity, validateSpread } from './protocol/validation';
  */
 export async function createDeal(params: {
   currency: string;
+  frequency: Frequency;
   spread: number;
   partyAEmail: string;
   partyBEmail: string;
   flexibility: number;
   initialRange: Range;
-  description?: string;
+  description: string;
 }): Promise<string> {
   console.log('DEBUG: createDeal', { range: params.initialRange, spread: params.spread });
   if (!validateSpread(params.initialRange, params.spread + 0.01)) {
@@ -25,6 +26,7 @@ export async function createDeal(params: {
   
   const deal: Omit<Deal, 'id'> = {
     currency: params.currency,
+    frequency: params.frequency,
     spread: params.spread,
     partyAEmail: params.partyAEmail,
     partyBEmail: params.partyBEmail,
@@ -122,7 +124,11 @@ export async function submitBid(params: {
       if (result.outcome === 'MATCH') {
         t.update(dealRef, {
           status: 'COMPLETED',
-          result: { outcome: 'MATCH', value: result.value }
+          result: { 
+            outcome: 'MATCH', 
+            value: result.value,
+            directionRevealed: false
+          }
         });
       } else {
         const feasibility = checkFeasibility(rangeA1, params.range, deal.spread);
@@ -163,9 +169,21 @@ export async function submitBid(params: {
 
         const result = evaluateRound1(bids.A, bids.B);
         
+        const resultData: any = { 
+          outcome: result.outcome,
+          directionRevealed: result.outcome === 'MATCH' ? false : true 
+        };
+        
+        if (result.value !== undefined) {
+          resultData.value = result.value;
+        } else if (resultData.directionRevealed) {
+          const feasibility = checkFeasibility(bids.A, bids.B, deal.spread);
+          resultData.direction = feasibility.direction;
+        }
+
         Object.assign(update, {
           status: 'COMPLETED',
-          result: { outcome: result.outcome, value: result.value }
+          result: resultData
         });
       }
       

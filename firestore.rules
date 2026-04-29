@@ -6,8 +6,13 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function getDeal(dealId) {
+      return get(/databases/$(database)/documents/deals/$(dealId)).data;
+    }
+
     match /deals/{dealId} {
       allow read: if isAuthenticated() && (
+        resource == null ||
         request.auth.token.email == resource.data.partyAEmail ||
         request.auth.token.email == resource.data.partyBEmail
       );
@@ -15,8 +20,12 @@ service cloud.firestore {
 
       match /bids/{bidId} {
         allow read: if isAuthenticated() && (
-          (resource.data.party == 'A' && request.auth.token.email == get(/databases/$(database)/documents/deals/$(dealId)).data.partyAEmail) ||
-          (resource.data.party == 'B' && request.auth.token.email == get(/databases/$(database)/documents/deals/$(dealId)).data.partyBEmail)
+          exists(/databases/$(database)/documents/deals/$(dealId)) &&
+          (request.auth.token.email == getDeal(dealId).partyAEmail || request.auth.token.email == getDeal(dealId).partyBEmail) &&
+          (resource == null || (
+            (resource.data.party == 'A' && request.auth.token.email == getDeal(dealId).partyAEmail) ||
+            (resource.data.party == 'B' && request.auth.token.email == getDeal(dealId).partyBEmail)
+          ))
         );
         allow write: if false;
       }
