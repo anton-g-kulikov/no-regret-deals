@@ -22,6 +22,8 @@ const COMMON_CURRENCIES = [
   { symbol: 'د.إ', label: 'AED (د.إ)' },
 ];
 
+import { Frequency } from '@/lib/protocol/types';
+
 export default function CreateDealPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,7 @@ export default function CreateDealPage() {
   const [selectedSpread, setSelectedSpread] = useState(0.1); // 10% default
   const [partyBEmail, setPartyBEmail] = useState('');
   const [currency, setCurrency] = useState('$');
+  const [frequency, setFrequency] = useState<Frequency>('annual');
   const [description, setDescription] = useState('');
   
   // Derived Protocol Values
@@ -80,6 +83,7 @@ export default function CreateDealPage() {
         },
         body: JSON.stringify({
           currency,
+          frequency,
           spread,
           flexibility: selectedSpread,
           partyBEmail,
@@ -141,6 +145,7 @@ export default function CreateDealPage() {
                 <textarea 
                   className="input subject-input" 
                   rows={2}
+                  required
                   placeholder="e.g., Senior Product Designer Salary or Purchase of 'Sunset Over Mars' Art"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -163,7 +168,21 @@ export default function CreateDealPage() {
               </div>
 
               <div className="form-group mb-3">
-                <label className="label uppercase-label">Your comfortable midpoint</label>
+                <div className="label-row">
+                  <label className="label uppercase-label">Your comfortable midpoint</label>
+                  <div className="frequency-switcher">
+                    {(['one-time', 'monthly', 'annual'] as Frequency[]).map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        className={`freq-btn ${frequency === f ? 'active' : ''}`}
+                        onClick={() => setFrequency(f)}
+                      >
+                        {f.replace('-', ' ')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="currency-input-group">
                   <select 
                     className="input currency-select" 

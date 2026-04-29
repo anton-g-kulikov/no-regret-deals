@@ -19,14 +19,17 @@ export type DealResult = {
   direction?: 'above' | 'below';
 };
 
+export type Frequency = 'one-time' | 'monthly' | 'annual';
+
 export interface Deal {
   id: string;
   currency: string;
+  frequency: Frequency;
   spread: number;
   flexibility: number;
   partyAEmail: string;
   partyBEmail: string;
-  description?: string;
+  description: string;
   status: DealStatus;
   result?: DealResult;
   createdAt: number;

@@ -59,10 +59,57 @@
   margin-bottom: 3rem;
 }
 
-.uppercase-label {
-  font-size: 0.9rem;
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.frequency-switcher {
+  display: flex;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  padding: 2px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.freq-btn {
+  padding: 6px 14px;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-  opacity: 0.8;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.freq-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.freq-btn.active {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.freq-btn:disabled {
+  cursor: default;
+}
+
+.uppercase-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+  font-weight: 700;
 }
 
 .subject-input {
