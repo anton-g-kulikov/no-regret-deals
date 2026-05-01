@@ -3,8 +3,6 @@
         .visualizer-track { height: 56px; background: rgba(255,255,255,0.03); border-radius: 16px; position: relative; border: 1px solid var(--border-color); }
         .visualizer-secure-range { position: absolute; height: 100%; background: linear-gradient(to bottom, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.1)); z-index: 1; border-left: 2px solid var(--accent-color); border-right: 2px solid var(--accent-color); }
         .range-label { position: absolute; top: 0; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; white-space: nowrap; transform: translateX(-50%); z-index: 5; }
-        .range-label.min { }
-        .range-label.max { }
         
         .visualizer-midpoint-line { position: absolute; width: 2px; height: 100%; background: white; z-index: 2; box-shadow: 0 0 15px rgba(255,255,255,0.3); transform: translateX(-50%); opacity: 0.8; }
         
