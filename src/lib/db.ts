@@ -1,5 +1,5 @@
 import { db } from './firebase-admin';
-import type { Deal, Range, Bid, Party, DealResult } from './protocol/types';
+import type { Deal, Range, Bid, Party, DealResult, Frequency } from './protocol/types';
 import { evaluateRound1, checkFeasibility } from './protocol/engine';
 import { validateContinuity, validateSpread } from './protocol/validation';
 
